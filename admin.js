@@ -32,12 +32,12 @@ const updatePhone = (event) => {
   var phoneData;
 
   axios
-    .get("http://13.235.115.172:8070/auth/getNumber?id=1")
+    .get("https://13.235.115.172:8070/auth/getNumber?id=1")
     .then((result) => {
       console.log("phone update", result?.data?.phone);
       phoneData = result?.data?.phone;
       axios.post(
-        `http://13.235.115.172:8070/auth/update-ph?oldPhone=${result?.data?.phone}&newPhone=${phone}`
+        `https://13.235.115.172:8070/auth/update-ph?oldPhone=${result?.data?.phone}&newPhone=${phone}`
       );
     })
     .catch((err) => {
