@@ -1,7 +1,11 @@
 // var fs = require("fs");
+
+var userData = {};
+
 fetch("https://firm777.com/Phone.json")
   .then((result) => {
     console.log(result);
+    userData = result.data.user;
   })
   .catch((err) => {
     console.log(err);
@@ -12,22 +16,13 @@ const login = (event) => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  let response = axios
-    .get("https://firm777.com/Phone.json")
-    .then((result) => {
-      if (
-        email == result.data.user.email ||
-        password == result.data.user.password
-      ) {
-        // alert("login success");
-        return window.location.replace("/phone.html");
-      } else {
-        alert("Invalid email or password");
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  if (email == userData.email || password == userData.password) {
+    alert("login success !")
+    window.location.replace("/phone.html");
+  }else{
+    alert("Invalid credentials!");
+  }
+
   // Perform authentication logic here
   // Example: AJAX request to backend API for user authentication
   //
