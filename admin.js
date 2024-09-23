@@ -38,11 +38,15 @@ const updatePhone = (event) => {
   axios
     .get("https://api.astropoints.in/auth/getNumber?id=1")
     .then((result) => {
-      console.log("phone update", result?.data?.phone);
       phoneData = result?.data?.phone;
       axios.post(
         `https://13.235.115.172:8070/auth/update-ph?oldPhone=${result?.data?.phone}&newPhone=${phone}`
-      );
+      )..then((result) => {
+        alert(result.data.message)
+        window.location.replace('./index.html')
+      }).catch((err) => {
+        alert(err.message)
+      });;
     })
     .catch((err) => {
       console.log(error);
