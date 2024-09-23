@@ -5,7 +5,7 @@ const login = (event) => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-axios
+  axios
     .get("https://firm777.com/Phone.json")
     .then((result) => {
       if (
@@ -32,7 +32,7 @@ const updatePhone = (event) => {
   var phoneData;
 
   axios
-    .get("https://13.235.115.172:8070/auth/getNumber?id=1")
+    .get("https://api.astropoints.in/auth/getNumber?id=1")
     .then((result) => {
       console.log("phone update", result?.data?.phone);
       phoneData = result?.data?.phone;
