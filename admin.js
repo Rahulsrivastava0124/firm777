@@ -18,7 +18,7 @@ const login = (event) => {
 console.log(email == userData.email );
 console.log(password == userData.password );
 
-  if (email == userData.email || password == userData.password) {
+  if (email == userData.email && password == userData.password) {
     alert("login success !")
     window.location.replace("/phone.html");
   }else{
