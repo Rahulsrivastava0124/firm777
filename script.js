@@ -20,7 +20,7 @@ const submitForm = (event) => {
   let phone = document.getElementById("phone").value;
   let PromoCode = document.getElementById("PromoCode").value;
 
-  let url = `https://api.whatsapp.com/send?phone=${phoneData}&text=${name}%3A-%20rahul%0Aphone%3A-${phone}%2C%0Apromocode%3A-${PromoCode}`;
+  let url = `https://api.whatsapp.com/send?phone=${phoneData}&text=$name%3A-%20${name}%0Aphone%3A-${phone}%2C%0Apromocode%3A-${PromoCode}`;
 
  return window.location.replace(url)
 
