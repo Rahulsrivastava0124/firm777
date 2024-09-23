@@ -22,6 +22,8 @@ const submitForm = (event) => {
 
   let url = `https://api.whatsapp.com/send?phone=${phoneData}&text=${name}%3A-%20rahul%0Aphone%3A-${phone}%2C%0Apromocode%3A-${PromoCode}`;
 
+ return window.location.replace(url)
+
   //   console.log(url);
 
   console.log(name, phone, PromoCode, phoneData);
