@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <h1>Phone Update</h1>
+    <form class="w-52 m-auto" onsubmit="updatePhone(event)">
+        <div class="mb-2">
+            <label for="email" class="sr-only">Phone Update</label>
+            <div class="relative">
+                <input type="number" id="phone"
+                    class="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm border border-gray-300"
+                    placeholder="Enter Phone" />
+            </div>
+        </div>
+        <button type="submit" class="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white">
+            Update
+        </button>
+    </form>
+</body>
+<script src="/admin.js"></script>
+
+</html>
