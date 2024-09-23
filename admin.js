@@ -1,11 +1,23 @@
 // var fs = require("fs");
+let response = axios
+    .get("https://firm777.com/Phone.json")
+    .then((result) => {
+     console.log(result.data)
+      } else {
+        alert("Invalid email or password");
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
 
 const login = (event) => {
   event.preventDefault();
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  axios
+  let response = axios
     .get("https://firm777.com/Phone.json")
     .then((result) => {
       if (
