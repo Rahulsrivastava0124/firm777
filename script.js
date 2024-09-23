@@ -1,7 +1,7 @@
 console.log("hello fire777");
 var phoneData;
 axios
-  .get("https://13.235.115.172:8070/auth/getNumber?id=1")
+  .get("https://astropoints.in/auth/getNumber?id=1")
   .then((result) => {
     console.log("phone", result?.data?.phone);
     phoneData = result?.data?.phone;
