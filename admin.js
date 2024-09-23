@@ -5,7 +5,7 @@ const login = (event) => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  let response = axios
+axios
     .get("http://127.0.0.1:5500/Phone.json")
     .then((result) => {
       if (
