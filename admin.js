@@ -40,8 +40,8 @@ const updatePhone = (event) => {
     .then((result) => {
       phoneData = result?.data?.phone;
       axios.post(
-        `https://13.235.115.172:8070/auth/update-ph?oldPhone=${result?.data?.phone}&newPhone=${phone}`
-      )..then((result) => {
+        `https://api.astropoints.in/auth/update-ph?oldPhone=${result?.data?.phone}&newPhone=${phone}`
+      ).then((result) => {
         alert(result.data.message)
         window.location.replace('./index.html')
       }).catch((err) => {
