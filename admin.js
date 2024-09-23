@@ -52,5 +52,4 @@ const updatePhone = (event) => {
       console.log(error);
     });
 
-  alert(phone);
 };
