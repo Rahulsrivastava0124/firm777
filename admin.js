@@ -2,7 +2,7 @@
 
 var userData = {};
 
-fetch("https://firm777.com/Phone.json")
+axios("https://firm777.com/Phone.json")
   .then((result) => {
     console.log(result);
     userData = result.data.user;
@@ -15,6 +15,8 @@ const login = (event) => {
   event.preventDefault();
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+console.log(email == userData.email );
+console.log(password == userData.password );
 
   if (email == userData.email || password == userData.password) {
     alert("login success !")
