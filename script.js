@@ -7,7 +7,7 @@ axios
     phoneData = result?.data?.phone;
     let anchors = document.querySelectorAll("a");
     anchors.forEach(function (anchor) {
-      anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20!D%20,CODE%20-FREE50`;
+      anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20ID%20,CODE%20-FREE50`;
     });
   })
   .catch((err) => {
