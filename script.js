@@ -7,7 +7,7 @@ axios
     phoneData = result?.data?.phone;
     let anchors = document.querySelectorAll("a");
     anchors.forEach(function (anchor) {
-      anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Continue%20to%20Chat%0AHi%2C%20I%20Need%20!D%20%EF%BF%BD%20Promo%20Code%20-%20%5B%20KLP190%20%5D`;
+      anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Continue%20to%20Chat%0AHi%2C%20I%20Need%20!D%20%EF%BF%BD%20CODE %20-%20%5B%FREE50%20%5D`;
     });
   })
   .catch((err) => {
