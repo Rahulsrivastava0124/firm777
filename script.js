@@ -11,6 +11,7 @@ axios
       if (Promocode!=undefined) {
         console.log(Promocode[1]);
         anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20ID%20,CODE%20-${Promocode[1]}`;
+        document.getElementById("PromoCode").value=Promocode[1];
       } else {
         anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20ID%20,CODE%20-FREE50`;
       }
