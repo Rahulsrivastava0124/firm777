@@ -13,12 +13,12 @@
 <body class=" ">
     <h1 class="py-2 bg-gray-800 text-yellow-500 text-center">Phone Update</h1>
     <form class="w-52 m-auto " onsubmit="updatePhone(event)">
-            <label for="email" class="sr-only">Phone Update</label>
-            <div class="relative">
-                <input type="number" id="phone"
-                    class="w-full mt-3 rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm border border-gray-300"
-                    placeholder="Enter Phone" />
-            </div>
+        <label for="email" class="sr-only">Phone Update</label>
+        <div class="relative">
+            <input type="number" id="phone"
+                class="w-full mt-3 rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm border border-gray-300"
+                placeholder="Enter Phone" />
+        </div>
         <button type="submit" class="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white">
             Update
         </button>
@@ -29,6 +29,7 @@
                 <label for="promoCode" class="sr-only">PromoCode</label>
                 <div class="relative">
                     <input type="test" id="promocode"
+                    oninput="this.value = this.value.toUpperCase()"
                         class="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm border border-gray-300"
                         placeholder="PromoCode" />
                 </div>
@@ -37,16 +38,16 @@
                 Create
             </button>
         </div>
-    </from>
+        </from>
         <div>
             <div class=" sm:w-[15%] m-auto">
-            <div class="w-full max-w-[16rem] flex items-center">
-                <input type="text" value="" id="myInput" class="input border border-gray-300 p-4 rounded">
-                <!-- The button used to copy the text -->
-                <button onclick="myFunction()" class="bg-indigo-600 m-2 p-2 rounded text-3xl">📒</button>
-            </div>
+                <div class="w-full max-w-[16rem] flex items-center">
+                    <input type="text" value="" id="myInput" class="input border border-gray-300 p-4 rounded">
+                    <!-- The button used to copy the text -->
+                    <button onclick="myFunction()" class="bg-indigo-600 m-2 p-2 rounded text-3xl">📒</button>
+                </div>
 
-        </div>
+            </div>
 
         </div>
 
