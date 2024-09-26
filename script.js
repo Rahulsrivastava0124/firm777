@@ -8,7 +8,7 @@ axios
     phoneData = result?.data?.phone;
     let anchors = document.querySelectorAll("a");
     anchors.forEach(function (anchor) {
-      if (Promocode[1]) {
+      if (Promocode!=undefined) {
         console.log(Promocode[1]);
         anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20ID%20,CODE%20-${Promocode[1]}`;
       } else {
