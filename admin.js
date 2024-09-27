@@ -17,7 +17,7 @@ axios
     console.log(result);
     result.data.map((items, index) => {
       console.log(items);
-      
+
       var table = document.getElementById("myTable");
       var row = table.insertRow(0);
       var cell1 = row.insertCell(0);
@@ -26,6 +26,9 @@ axios
       cell1.innerHTML = items.Name;
       cell2.innerHTML = items.Phone;
       cell3.innerHTML = items.Promocode;
+      cell1.classList="whitespace-nowrap px-4 py-2 text-gray-700";
+      cell2.classList="whitespace-nowrap px-4 py-2 text-gray-700";
+      cell3.classList="whitespace-nowrap px-4 py-2 text-gray-700";
     });
   })
   .catch((err) => {
