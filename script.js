@@ -31,5 +31,18 @@ const submitForm = (event) => {
 
   let url = `https://api.whatsapp.com/send?phone=${phoneData}&text=Name-%20${name}%0APhone-${phone}%2C%0APromocode-${PromoCode}`;
 
-  return window.location.replace(url);
+  axios.post("https://api-firm777-com.onrender.com/createUser",{
+    name,
+    phone,
+    promocode:PromoCode,
+  }).then(result => {
+    console.log(result);
+    // document.getElementById(SubmitIndex),innerHTML;
+    return window.location.replace(url);
+  }).catch((err) => {
+    console.log(err)
+  })
+
+
+ 
 };

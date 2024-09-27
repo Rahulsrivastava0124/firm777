@@ -28,8 +28,7 @@
             <div class="mb-2">
                 <label for="promoCode" class="sr-only">PromoCode</label>
                 <div class="relative">
-                    <input type="test" id="promocode"
-                    oninput="this.value = this.value.toUpperCase()"
+                    <input type="test" id="promocode" oninput="this.value = this.value.toUpperCase()"
                         class="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm border border-gray-300"
                         placeholder="PromoCode" />
                 </div>
@@ -46,10 +45,33 @@
                     <!-- The button used to copy the text -->
                     <button onclick="myFunction()" class="bg-indigo-600 m-2 p-2 rounded text-3xl">📒</button>
                 </div>
-
             </div>
-
         </div>
+
+        <!-- user table  -->
+
+        <!--
+  Heads up! 👋
+
+  This component comes with some `rtl` classes. Please remove them if they are not needed in your project.
+-->
+
+<div class="overflow-x-auto rounded-lg border border-gray-200 mt-4 ">
+    <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm" >
+        <h5 class="text-center">USERs</h5>
+      <thead class="ltr:text-left rtl:text-right">
+        <tr>
+          <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Name</th>
+          <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Phone</th>
+          <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Promo Code</th>
+        </tr>
+      </thead>
+  
+      <tbody class="divide-y divide-gray-200" id="myTable">
+    
+      </tbody>
+    </table>
+  </div>
 
 </body>
 <script src="/admin.js"></script>
