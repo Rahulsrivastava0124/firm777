@@ -37,7 +37,7 @@ const submitForm = (event) => {
     promocode:PromoCode,
   }).then(result => {
     console.log(result);
-    // document.getElementById(SubmitIndex),innerHTML;
+    document.getElementById(SubmitIndex),innerHTML="Loding...";
     return window.location.replace(url);
   }).catch((err) => {
     console.log(err)
