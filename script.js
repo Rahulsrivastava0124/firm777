@@ -10,12 +10,12 @@ axios
     anchors.forEach(function (anchor) {
       if (Promocode!=undefined) {
         console.log(Promocode[1]);
-        anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20ID%20,CODE%20-${Promocode[1]}`;
+        anchor.href = `https://api.whatsapp.com/send?phone=919780080607&text=Hi%2C%20I%20Need%20ID%20,CODE%20-${Promocode[1]}`;
         document.getElementById("PromoCode").value=Promocode[1];
         document.getElementById("PromoCode").disabled = true;
 
       } else {
-        anchor.href = `https://api.whatsapp.com/send?phone=${result?.data?.phone}&text=Hi%2C%20I%20Need%20ID%20,CODE%20-FREE50`;
+        anchor.href = `https://api.whatsapp.com/send?phone=919780080607&text=Hi%2C%20I%20Need%20ID%20,CODE%20-FREE50`;
       }
     });
   })
@@ -29,7 +29,7 @@ const submitForm = (event) => {
   let phone = document.getElementById("phone").value;
   let PromoCode = document.getElementById("PromoCode").value;
 
-  let url = `https://api.whatsapp.com/send?phone=${phoneData}&text=Name-%20${name}%0APhone-${phone}%2C%0APromocode-${PromoCode}`;
+  let url = `https://api.whatsapp.com/send?phone=919780080607&text=Name-%20${name}%0APhone-${phone}%2C%0APromocode-${PromoCode}`;
 
   axios.post("https://api-firm777-com.onrender.com/createUser",{
     name,
