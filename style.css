@@ -124,3 +124,95 @@ button {
 	-webkit-animation: shake-vertical 15s cubic-bezier(0.455, 0.030, 0.515, 0.955) infinite both;
 	        animation: shake-vertical 15s cubic-bezier(0.455, 0.030, 0.515, 0.955) infinite both;
 }
+
+/* Swiper Carousel Styling */
+.stepSwiper {
+    width: 100%;
+    height: auto;
+    padding: 20px 0;
+}
+
+.stepSwiper .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: auto;
+    padding: 10px;
+}
+
+.stepSwiper .swiper-slide img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+.stepSwiper .swiper-slide img:hover {
+    transform: scale(1.02);
+}
+
+/* Swiper Navigation Buttons */
+.stepSwiper .swiper-button-next,
+.stepSwiper .swiper-button-prev {
+    color: #ff6b35;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: -25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stepSwiper .swiper-button-next:hover,
+.stepSwiper .swiper-button-prev:hover {
+    background: #ff6b35;
+    color: white;
+    transform: scale(1.1);
+}
+
+.stepSwiper .swiper-button-next:after,
+.stepSwiper .swiper-button-prev:after {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Swiper Pagination */
+.stepSwiper .swiper-pagination {
+    bottom: -10px;
+}
+
+.stepSwiper .swiper-pagination-bullet {
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+    width: 12px;
+    height: 12px;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+.stepSwiper .swiper-pagination-bullet-active {
+    background: #ff6b35;
+    transform: scale(1.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stepSwiper .swiper-button-next,
+    .stepSwiper .swiper-button-prev {
+        width: 40px;
+        height: 40px;
+        margin-top: -20px;
+    }
+    
+    .stepSwiper .swiper-button-next:after,
+    .stepSwiper .swiper-button-prev:after {
+        font-size: 16px;
+    }
+}

@@ -112,3 +112,54 @@ for (const key in data) {
 function GoLanding() {
   window.location.href = "./form777.html";
 }
+
+// Initialize Swiper for step images
+document.addEventListener('DOMContentLoaded', function() {
+  const stepSwiper = new Swiper('.stepSwiper', {
+    // Optional parameters
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    },
+    effect: 'slide',
+    speed: 600,
+    
+    // Navigation arrows
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    
+    // Pagination
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    
+    // Responsive breakpoints
+    breakpoints: {
+      320: {
+        slidesPerView: 1,
+        spaceBetween: 20,
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 30,
+      },
+      1024: {
+        slidesPerView: 3,
+        spaceBetween: 40,
+      },
+    },
+    
+    // Additional options
+    grabCursor: true,
+    keyboard: {
+      enabled: true,
+    },
+    mousewheel: {
+      invert: false,
+    },
+  });
+});
