@@ -104,6 +104,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const carouselPreview = document.getElementById("carouselPreview");
 
   if (tabMainBtn && tabCarouselBtn && tabSubdomainBtn && tabMain && tabCarousel && tabSubdomain) {
+    // Mobile nav buttons (topbar)
+    const mobileTabMainBtn = document.getElementById("mobileTabMainBtn");
+    const mobileTabCarouselBtn = document.getElementById("mobileTabCarouselBtn");
+    const mobileTabSubdomainBtn = document.getElementById("mobileTabSubdomainBtn");
+
     const activateMain = () => {
       tabMain.style.display = "block";
       tabCarousel.style.display = "none";
@@ -113,6 +118,14 @@ document.addEventListener("DOMContentLoaded", function () {
       tabCarouselBtn.classList.add("bg-gray-200", "text-gray-800");
       tabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
       tabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
+      // mobile button visual state (best-effort)
+      if (mobileTabMainBtn && mobileTabCarouselBtn && mobileTabSubdomainBtn) {
+        mobileTabMainBtn.classList.add("bg-indigo-600", "text-white");
+        mobileTabCarouselBtn.classList.remove("bg-indigo-600", "text-white");
+        mobileTabCarouselBtn.classList.add("bg-gray-200", "text-gray-800");
+        mobileTabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
+        mobileTabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
+      }
     };
     const activateCarousel = () => {
       tabMain.style.display = "none";
@@ -124,6 +137,13 @@ document.addEventListener("DOMContentLoaded", function () {
       tabMainBtn.classList.add("bg-gray-200", "text-gray-800");
       tabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
       tabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
+      if (mobileTabMainBtn && mobileTabCarouselBtn && mobileTabSubdomainBtn) {
+        mobileTabCarouselBtn.classList.add("bg-indigo-600", "text-white");
+        mobileTabMainBtn.classList.remove("bg-indigo-600", "text-white");
+        mobileTabMainBtn.classList.add("bg-gray-200", "text-gray-800");
+        mobileTabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
+        mobileTabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
+      }
     };
     const activateSubdomain = () => {
       tabMain.style.display = "none";
@@ -135,6 +155,13 @@ document.addEventListener("DOMContentLoaded", function () {
       tabMainBtn.classList.add("bg-gray-200", "text-gray-800");
       tabCarouselBtn.classList.remove("bg-indigo-600", "text-white");
       tabCarouselBtn.classList.add("bg-gray-200", "text-gray-800");
+      if (mobileTabMainBtn && mobileTabCarouselBtn && mobileTabSubdomainBtn) {
+        mobileTabSubdomainBtn.classList.add("bg-indigo-600", "text-white");
+        mobileTabMainBtn.classList.remove("bg-indigo-600", "text-white");
+        mobileTabMainBtn.classList.add("bg-gray-200", "text-gray-800");
+        mobileTabCarouselBtn.classList.remove("bg-indigo-600", "text-white");
+        mobileTabCarouselBtn.classList.add("bg-gray-200", "text-gray-800");
+      }
     };
 
     tabMainBtn.addEventListener("click", function (e) {
@@ -149,6 +176,26 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       activateSubdomain();
     });
+
+    // Mobile buttons mirror behavior
+    if (mobileTabMainBtn) {
+      mobileTabMainBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        activateMain();
+      });
+    }
+    if (mobileTabCarouselBtn) {
+      mobileTabCarouselBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        activateCarousel();
+      });
+    }
+    if (mobileTabSubdomainBtn) {
+      mobileTabSubdomainBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        activateSubdomain();
+      });
+    }
 
     // Set initial state
     activateMain();
