@@ -2,6 +2,273 @@
 
 var userData = {};
 
+// Load previously uploaded images from localStorage
+function loadUploadedImages() {
+  const uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
+  console.log('Loaded uploaded images:', uploadedImages);
+  return uploadedImages;
+}
+
+// Clear uploaded images from localStorage
+function clearUploadedImages() {
+  localStorage.removeItem('uploadedImages');
+  console.log('Cleared uploaded images');
+}
+
+// Fetch all images from server
+function fetchAllImages() {
+  const requestOptions = {
+    method: "GET",
+    redirect: "follow"
+  };
+
+  return fetch("http://localhost:3000/api/images", requestOptions)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((result) => {
+      console.log('Fetched images from server:', result);
+      
+      if (result.success && result.data) {
+        // Sync server data with localStorage
+        const serverImages = result.data.map(img => ({
+          id: img.id,
+          imageUrl: img.imageUrl,
+          uploadDate: img.upload_date,
+          slideIndex: 'server' // Mark as server image
+        }));
+        
+        // Store server images in localStorage
+        localStorage.setItem('serverImages', JSON.stringify(serverImages));
+        
+        return serverImages;
+      }
+      return [];
+    })
+    .catch((error) => {
+      console.error('Error fetching images:', error);
+      return [];
+    });
+}
+
+// Display server images in the carousel
+function displayServerImages(images) {
+  const dynamicSlides = document.getElementById("dynamicSlides");
+  if (!dynamicSlides || !images.length) return;
+  
+  // Clear existing slides first
+  dynamicSlides.innerHTML = "";
+  
+  images.forEach((img, index) => {
+    const slideIndex = index + 1;
+    const card = document.createElement("div");
+    card.className = "border rounded p-3 bg-blue-50";
+    
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-medium">Image ${slideIndex}</h3>
+        <div class="flex gap-2">
+          <button data-edit="${img.id}" class="px-2 py-1 text-xs rounded bg-indigo-600 text-white">Edit</button>
+          <button data-delete="${img.id}" class="px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
+        </div>
+      </div>
+      <img src="${img.imageUrl}" alt="Image ${slideIndex}" class="w-full h-40 object-cover rounded border" />
+    `;
+    
+    dynamicSlides.appendChild(card);
+  });
+}
+
+// Handle edit image
+function handleEditImage(imageId) {
+  // Create a file input for editing
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      updateImage(imageId, file);
+    }
+  });
+  
+  fileInput.click();
+}
+
+// Update image function
+function updateImage(imageId, file) {
+  const formdata = new FormData();
+  formdata.append("image", file, file.name);
+
+  const requestOptions = {
+    method: "PUT",
+    body: formdata,
+    redirect: "follow"
+  };
+
+  console.log('Updating image:', imageId, 'with file:', file.name);
+
+  // Find and update the edit button to show loading state
+  const editButton = document.querySelector(`[data-edit="${imageId}"]`);
+  if (editButton) {
+    editButton.textContent = 'Updating...';
+    editButton.disabled = true;
+    editButton.classList.remove('bg-indigo-600');
+    editButton.classList.add('bg-gray-400');
+  }
+
+  fetch(`http://localhost:3000/api/images/${imageId}`, requestOptions)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((result) => {
+      console.log('Update successful:', result);
+      
+      // Reset button state
+      if (editButton) {
+        editButton.textContent = 'Edit';
+        editButton.disabled = false;
+        editButton.classList.remove('bg-gray-400');
+        editButton.classList.add('bg-indigo-600');
+      }
+      
+      // Refresh the server images display after successful update
+      fetchAllImages().then((images) => {
+        if (images.length > 0) {
+          displayServerImages(images);
+        } else {
+          document.getElementById("dynamicSlides").innerHTML = "<p class='text-gray-500 text-center'>No images found on server.</p>";
+        }
+      });
+    })
+    .catch((error) => {
+      console.error('Update error:', error);
+      alert(`Failed to update image: ${error.message}`);
+      
+      // Reset button state on error
+      if (editButton) {
+        editButton.textContent = 'Edit';
+        editButton.disabled = false;
+        editButton.classList.remove('bg-gray-400');
+        editButton.classList.add('bg-indigo-600');
+      }
+    });
+}
+
+// Handle delete image
+function handleDeleteImage(imageId) {
+  if (confirm(`Are you sure you want to delete image ${imageId}?`)) {
+    const requestOptions = {
+      method: "DELETE",
+      redirect: "follow"
+    };
+
+    // Show loading state (you could add a loading indicator here)
+    console.log('Deleting image:', imageId);
+
+    fetch(`http://localhost:3000/api/images/${imageId}`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((result) => {
+        console.log('Delete successful:', result);
+        
+        // Refresh the server images display after successful deletion
+        fetchAllImages().then((images) => {
+          if (images.length > 0) {
+            displayServerImages(images);
+          } else {
+            document.getElementById("dynamicSlides").innerHTML = "<p class='text-gray-500 text-center'>No images found on server.</p>";
+          }
+        });
+      })
+      .catch((error) => {
+        console.error('Delete error:', error);
+        alert(`Failed to delete image: ${error.message}`);
+      });
+  }
+}
+
+// Image upload function
+function uploadImage(file, slideIndex) {
+  if (!file) {
+    console.error('No file selected');
+    return;
+  }
+
+  const formdata = new FormData();
+  formdata.append("image", file, file.name);
+
+  const requestOptions = {
+    method: "POST",
+    body: formdata,
+    redirect: "follow"
+  };
+
+  // Show loading state
+  const uploadBtn = document.getElementById(`dynSlide${slideIndex}UploadBtn`);
+  if (uploadBtn) {
+    uploadBtn.textContent = 'Uploading...';
+    uploadBtn.disabled = true;
+  }
+
+  fetch("http://localhost:3000/api/upload-image", requestOptions)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json(); // Changed from .text() to .json()
+    })
+    .then((result) => {
+      console.log('Upload successful:', result);
+      
+      // Store the uploaded image data
+      if (result.success && result.data) {
+        const imageData = {
+          id: result.data.id,
+          imageUrl: result.data.imageUrl,
+          uploadDate: result.data.uploadDate,
+          slideIndex: slideIndex
+        };
+        
+        // Save to localStorage for persistence
+        let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
+        uploadedImages.push(imageData);
+        localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+        
+        alert(`Image uploaded successfully for Slide ${slideIndex}!\nURL: ${result.data.imageUrl}`);
+      } else {
+        alert(`Image uploaded successfully for Slide ${slideIndex}`);
+      }
+      
+      // Reset button state
+      if (uploadBtn) {
+        uploadBtn.textContent = 'Upload';
+        uploadBtn.disabled = false;
+      }
+    })
+    .catch((error) => {
+      console.error('Upload error:', error);
+      alert(`Upload failed: ${error.message}`);
+      
+      // Reset button state
+      if (uploadBtn) {
+        uploadBtn.textContent = 'Upload';
+        uploadBtn.disabled = false;
+      }
+    });
+}
+
 axios("https://firm777.com/Phone.json")
   .then((result) => {
     console.log(result);
@@ -144,6 +411,13 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileTabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
         mobileTabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
       }
+      
+      // Auto-load server images when carousel tab is activated
+      fetchAllImages().then((images) => {
+        if (images.length > 0) {
+          displayServerImages(images);
+        }
+      });
     };
     const activateSubdomain = () => {
       tabMain.style.display = "none";
@@ -162,6 +436,17 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileTabCarouselBtn.classList.remove("bg-indigo-600", "text-white");
         mobileTabCarouselBtn.classList.add("bg-gray-200", "text-gray-800");
       }
+      
+      // Auto-load subdomains when subdomain tab is activated
+      fetchSubdomains().then((subdomains) => {
+        if (subdomains.length > 0) {
+          renderTable(subdomains);
+        } else {
+          renderTable(); // Fallback to localStorage
+        }
+      }).catch(() => {
+        renderTable(); // Fallback to localStorage on error
+      });
     };
 
     tabMainBtn.addEventListener("click", function (e) {
@@ -222,24 +507,155 @@ document.addEventListener("DOMContentLoaded", function () {
   function saveMappings(obj) {
     localStorage.setItem("sdMappings", JSON.stringify(obj));
   }
-  function renderTable() {
-    if (!sdTableBody) return;
-    const data = loadMappings();
-    sdTableBody.innerHTML = "";
-    Object.keys(data).forEach((name) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="px-3 py-2">${name}</td>
-        <td class="px-3 py-2">${data[name]}</td>
-        <td class="px-3 py-2">
-          <button data-edit="${name}" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-800">Edit</button>
-          <button data-delete="${name}" class="ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
-        </td>
-      `;
-      sdTableBody.appendChild(tr);
-    });
+
+  // Subdomain API functions
+  function fetchSubdomains() {
+    const requestOptions = {
+      method: "GET",
+      redirect: "follow"
+    };
+
+    return fetch("http://localhost:3000/api/subdomains", requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        console.log('Fetched subdomains:', result);
+        return result.data || [];
+      })
+      .catch((error) => {
+        console.error('Error fetching subdomains:', error);
+        return [];
+      });
   }
-  renderTable();
+
+  function createSubdomain(subdomainName, phoneNumber) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      "subdomain_name": subdomainName,
+      "phone_number": phoneNumber
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow"
+    };
+
+    return fetch("http://localhost:3000/api/subdomains", requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        console.log('Subdomain created:', result);
+        return result;
+      })
+      .catch((error) => {
+        console.error('Error creating subdomain:', error);
+        throw error;
+      });
+  }
+
+  function updateSubdomain(subdomainId, subdomainName, phoneNumber) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      "subdomain_name": subdomainName,
+      "phone_number": phoneNumber
+    });
+
+    const requestOptions = {
+      method: "PUT",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow"
+    };
+
+    return fetch(`http://localhost:3000/api/subdomains/${subdomainId}`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        console.log('Subdomain updated:', result);
+        return result;
+      })
+      .catch((error) => {
+        console.error('Error updating subdomain:', error);
+        throw error;
+      });
+  }
+
+  function deleteSubdomain(subdomainId) {
+    const requestOptions = {
+      method: "DELETE",
+      redirect: "follow"
+    };
+
+    return fetch(`http://localhost:3000/api/subdomains/${subdomainId}`, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((result) => {
+        console.log('Subdomain deleted:', result);
+        return result;
+      })
+      .catch((error) => {
+        console.error('Error deleting subdomain:', error);
+        throw error;
+      });
+  }
+  function renderTable(subdomains = null) {
+    if (!sdTableBody) return;
+    
+    if (subdomains) {
+      // Render server data
+      sdTableBody.innerHTML = "";
+      subdomains.forEach((subdomain) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-3 py-2">${subdomain.subdomain_name}</td>
+          <td class="px-3 py-2">${subdomain.phone_number}</td>
+          <td class="px-3 py-2">
+            <button data-edit-id="${subdomain._id}" data-edit-name="${subdomain.subdomain_name}" data-edit-phone="${subdomain.phone_number}" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-800">Edit</button>
+            <button data-delete-id="${subdomain._id}" class="ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
+          </td>
+        `;
+        sdTableBody.appendChild(tr);
+      });
+    } else {
+      // Fallback to localStorage data
+      const data = loadMappings();
+      sdTableBody.innerHTML = "";
+      Object.keys(data).forEach((name) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-3 py-2">${name}</td>
+          <td class="px-3 py-2">${data[name]}</td>
+          <td class="px-3 py-2">
+            <button data-edit="${name}" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-800">Edit</button>
+            <button data-delete="${name}" class="ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
+          </td>
+        `;
+        sdTableBody.appendChild(tr);
+      });
+    }
+  }
 
   if (sdAddUpdateBtn && sdName && sdPhone) {
     sdAddUpdateBtn.addEventListener("click", function (e) {
@@ -247,12 +663,42 @@ document.addEventListener("DOMContentLoaded", function () {
       const name = (sdName.value || "").trim();
       const phone = (sdPhone.value || "").trim();
       if (!name || !phone) return;
-      const data = loadMappings();
-      data[name] = phone;
-      saveMappings(data);
-      renderTable();
-      sdName.value = "";
-      sdPhone.value = "";
+      
+      // Check if we're editing (button text indicates mode)
+      const isEditing = sdAddUpdateBtn.textContent.includes('Update');
+      const editingId = sdAddUpdateBtn.getAttribute('data-editing-id');
+      
+      // Show loading state
+      const originalText = sdAddUpdateBtn.textContent;
+      sdAddUpdateBtn.textContent = isEditing ? 'Updating...' : 'Creating...';
+      sdAddUpdateBtn.disabled = true;
+      
+      const apiCall = isEditing 
+        ? updateSubdomain(editingId, name, phone)
+        : createSubdomain(name, phone);
+      
+      apiCall
+        .then((result) => {
+          console.log('Subdomain operation successful:', result);
+          // Refresh the table from server
+          return fetchSubdomains();
+        })
+        .then((subdomains) => {
+          renderTable(subdomains);
+          sdName.value = "";
+          sdPhone.value = "";
+          // Reset button state
+          sdAddUpdateBtn.textContent = 'Add / Update';
+          sdAddUpdateBtn.disabled = false;
+          sdAddUpdateBtn.removeAttribute('data-editing-id');
+        })
+        .catch((error) => {
+          console.error('Subdomain operation failed:', error);
+          alert(`Operation failed: ${error.message}`);
+          // Reset button state
+          sdAddUpdateBtn.textContent = originalText;
+          sdAddUpdateBtn.disabled = false;
+        });
     });
   }
   if (sdClearBtn && sdName && sdPhone) {
@@ -266,14 +712,50 @@ document.addEventListener("DOMContentLoaded", function () {
     sdTableBody.addEventListener("click", function (e) {
       const target = e.target;
       if (target && target.getAttribute) {
+        // Handle server data edit
+        const editId = target.getAttribute("data-edit-id");
+        const editName = target.getAttribute("data-edit-name");
+        const editPhone = target.getAttribute("data-edit-phone");
+        
+        // Handle server data delete
+        const deleteId = target.getAttribute("data-delete-id");
+        
+        // Handle localStorage data (fallback)
         const editKey = target.getAttribute("data-edit");
         const deleteKey = target.getAttribute("data-delete");
-        if (editKey) {
+        
+        if (editId && editName && editPhone) {
+          // Edit server data
+          sdName.value = editName;
+          sdPhone.value = editPhone;
+          sdAddUpdateBtn.textContent = 'Update / Save';
+          sdAddUpdateBtn.setAttribute('data-editing-id', editId);
+        } else if (editKey) {
+          // Edit localStorage data (fallback)
           const data = loadMappings();
           sdName.value = editKey;
           sdPhone.value = data[editKey] || "";
+          sdAddUpdateBtn.textContent = 'Update / Save';
         }
-        if (deleteKey) {
+        
+        if (deleteId) {
+          // Delete server data using DELETE API
+          if (confirm(`Are you sure you want to delete this subdomain?`)) {
+            deleteSubdomain(deleteId)
+              .then(() => {
+                // Refresh the table from server after successful deletion
+                return fetchSubdomains();
+              })
+              .then((subdomains) => {
+                renderTable(subdomains);
+              })
+              .catch((error) => {
+                console.error('Delete failed:', error);
+                alert(`Failed to delete subdomain: ${error.message}`);
+              });
+          }
+        } else if (deleteKey) {
+          // Delete localStorage data (fallback)
           const data = loadMappings();
           delete data[deleteKey];
           saveMappings(data);
@@ -287,10 +769,27 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       const name = (sdLookupName.value || "").trim();
       if (!name) return;
-      const data = loadMappings();
-      const phone = data[name] || "";
-      sdLookupPhone.value = phone;
-      subdomainUrl.value = name ? `https://${name}.firm777.com` : "";
+      
+      // Try to find in server data first
+      fetchSubdomains().then((subdomains) => {
+        const foundSubdomain = subdomains.find(sub => sub.subdomain_name === name);
+        if (foundSubdomain) {
+          sdLookupPhone.value = foundSubdomain.phone_number;
+          subdomainUrl.value = `https://${name}.firm777.com`;
+        } else {
+          // Fallback to localStorage
+          const data = loadMappings();
+          const phone = data[name] || "";
+          sdLookupPhone.value = phone;
+          subdomainUrl.value = name ? `https://${name}.firm777.com` : "";
+        }
+      }).catch(() => {
+        // Fallback to localStorage on error
+        const data = loadMappings();
+        const phone = data[name] || "";
+        sdLookupPhone.value = phone;
+        subdomainUrl.value = name ? `https://${name}.firm777.com` : "";
+      });
     });
   }
   if (copySubdomainBtn && subdomainUrl) {
@@ -335,11 +834,16 @@ document.addEventListener("DOMContentLoaded", function () {
     slide1Input.addEventListener("change", function () {
       const file = this.files && this.files[0];
       if (!file) return;
+      
+      // Show preview first
       const reader = new FileReader();
       reader.onload = function (e) {
         slide1Preview.src = e.target.result;
       };
       reader.readAsDataURL(file);
+      
+      // Upload the file to server
+      uploadImage(file, 1);
     });
   }
 
@@ -411,11 +915,16 @@ document.addEventListener("DOMContentLoaded", function () {
       fileInput.addEventListener("change", function () {
         const file = this.files && this.files[0];
         if (!file) return;
+        
+        // Show preview first
         const reader = new FileReader();
         reader.onload = function (e) {
           img.src = e.target.result;
         };
         reader.readAsDataURL(file);
+        
+        // Upload the file to server
+        uploadImage(file, slideIndex);
       });
 
       // remove slide
@@ -426,4 +935,29 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
+
+
+  // Event delegation for edit and delete buttons
+  if (dynamicSlides) {
+    dynamicSlides.addEventListener("click", function (e) {
+      if (e.target && e.target.getAttribute) {
+        const editId = e.target.getAttribute("data-edit");
+        const deleteId = e.target.getAttribute("data-delete");
+        
+        if (editId) {
+          handleEditImage(editId);
+        }
+        
+        if (deleteId) {
+          handleDeleteImage(deleteId);
+        }
+      }
+    });
+  }
+
+  // Load uploaded images on page load
+  loadUploadedImages();
+  
+  // Initial render of subdomain table (will show localStorage data initially)
+  renderTable();
 });
