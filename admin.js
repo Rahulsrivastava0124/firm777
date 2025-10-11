@@ -4,25 +4,27 @@ var userData = {};
 
 // Load previously uploaded images from localStorage
 function loadUploadedImages() {
-  const uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
-  console.log('Loaded uploaded images:', uploadedImages);
+  const uploadedImages = JSON.parse(
+    localStorage.getItem("uploadedImages") || "[]"
+  );
+  console.log("Loaded uploaded images:", uploadedImages);
   return uploadedImages;
 }
 
 // Clear uploaded images from localStorage
 function clearUploadedImages() {
-  localStorage.removeItem('uploadedImages');
-  console.log('Cleared uploaded images');
+  localStorage.removeItem("uploadedImages");
+  console.log("Cleared uploaded images");
 }
 
 // Fetch all images from server
 function fetchAllImages() {
   const requestOptions = {
     method: "GET",
-    redirect: "follow"
+    redirect: "follow",
   };
 
-  return fetch("http://localhost:3000/api/images", requestOptions)
+  return fetch("https://api2.firm777.com/api/images", requestOptions)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -30,26 +32,26 @@ function fetchAllImages() {
       return response.json();
     })
     .then((result) => {
-      console.log('Fetched images from server:', result);
-      
+      console.log("Fetched images from server:", result);
+
       if (result.success && result.data) {
         // Sync server data with localStorage
-        const serverImages = result.data.map(img => ({
+        const serverImages = result.data.map((img) => ({
           id: img.id,
           imageUrl: img.imageUrl,
           uploadDate: img.upload_date,
-          slideIndex: 'server' // Mark as server image
+          slideIndex: "server", // Mark as server image
         }));
-        
+
         // Store server images in localStorage
-        localStorage.setItem('serverImages', JSON.stringify(serverImages));
-        
+        localStorage.setItem("serverImages", JSON.stringify(serverImages));
+
         return serverImages;
       }
       return [];
     })
     .catch((error) => {
-      console.error('Error fetching images:', error);
+      console.error("Error fetching images:", error);
       return [];
     });
 }
@@ -58,15 +60,15 @@ function fetchAllImages() {
 function displayServerImages(images) {
   const dynamicSlides = document.getElementById("dynamicSlides");
   if (!dynamicSlides || !images.length) return;
-  
+
   // Clear existing slides first
   dynamicSlides.innerHTML = "";
-  
+
   images.forEach((img, index) => {
     const slideIndex = index + 1;
     const card = document.createElement("div");
     card.className = "border rounded p-3 bg-blue-50";
-    
+
     card.innerHTML = `
       <div class="flex items-center justify-between mb-2">
         <h3 class="font-medium">Image ${slideIndex}</h3>
@@ -77,7 +79,7 @@ function displayServerImages(images) {
       </div>
       <img src="${img.imageUrl}" alt="Image ${slideIndex}" class="w-full h-40 object-cover rounded border" />
     `;
-    
+
     dynamicSlides.appendChild(card);
   });
 }
@@ -85,17 +87,17 @@ function displayServerImages(images) {
 // Handle edit image
 function handleEditImage(imageId) {
   // Create a file input for editing
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  
-  fileInput.addEventListener('change', function(e) {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+
+  fileInput.addEventListener("change", function (e) {
     const file = e.target.files[0];
     if (file) {
       updateImage(imageId, file);
     }
   });
-  
+
   fileInput.click();
 }
 
@@ -107,21 +109,21 @@ function updateImage(imageId, file) {
   const requestOptions = {
     method: "PUT",
     body: formdata,
-    redirect: "follow"
+    redirect: "follow",
   };
 
-  console.log('Updating image:', imageId, 'with file:', file.name);
+  console.log("Updating image:", imageId, "with file:", file.name);
 
   // Find and update the edit button to show loading state
   const editButton = document.querySelector(`[data-edit="${imageId}"]`);
   if (editButton) {
-    editButton.textContent = 'Updating...';
+    editButton.textContent = "Updating...";
     editButton.disabled = true;
-    editButton.classList.remove('bg-indigo-600');
-    editButton.classList.add('bg-gray-400');
+    editButton.classList.remove("bg-indigo-600");
+    editButton.classList.add("bg-gray-400");
   }
 
-  fetch(`http://localhost:3000/api/images/${imageId}`, requestOptions)
+  fetch(`https://api2.firm777.com/api/images/${imageId}`, requestOptions)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -129,35 +131,36 @@ function updateImage(imageId, file) {
       return response.json();
     })
     .then((result) => {
-      console.log('Update successful:', result);
-      
+      console.log("Update successful:", result);
+
       // Reset button state
       if (editButton) {
-        editButton.textContent = 'Edit';
+        editButton.textContent = "Edit";
         editButton.disabled = false;
-        editButton.classList.remove('bg-gray-400');
-        editButton.classList.add('bg-indigo-600');
+        editButton.classList.remove("bg-gray-400");
+        editButton.classList.add("bg-indigo-600");
       }
-      
+
       // Refresh the server images display after successful update
       fetchAllImages().then((images) => {
         if (images.length > 0) {
           displayServerImages(images);
         } else {
-          document.getElementById("dynamicSlides").innerHTML = "<p class='text-gray-500 text-center'>No images found on server.</p>";
+          document.getElementById("dynamicSlides").innerHTML =
+            "<p class='text-gray-500 text-center'>No images found on server.</p>";
         }
       });
     })
     .catch((error) => {
-      console.error('Update error:', error);
+      console.error("Update error:", error);
       alert(`Failed to update image: ${error.message}`);
-      
+
       // Reset button state on error
       if (editButton) {
-        editButton.textContent = 'Edit';
+        editButton.textContent = "Edit";
         editButton.disabled = false;
-        editButton.classList.remove('bg-gray-400');
-        editButton.classList.add('bg-indigo-600');
+        editButton.classList.remove("bg-gray-400");
+        editButton.classList.add("bg-indigo-600");
       }
     });
 }
@@ -167,13 +170,13 @@ function handleDeleteImage(imageId) {
   if (confirm(`Are you sure you want to delete image ${imageId}?`)) {
     const requestOptions = {
       method: "DELETE",
-      redirect: "follow"
+      redirect: "follow",
     };
 
     // Show loading state (you could add a loading indicator here)
-    console.log('Deleting image:', imageId);
+    console.log("Deleting image:", imageId);
 
-    fetch(`http://localhost:3000/api/images/${imageId}`, requestOptions)
+    fetch(`https://api2.firm777.com/api/images/${imageId}`, requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -181,19 +184,20 @@ function handleDeleteImage(imageId) {
         return response.text();
       })
       .then((result) => {
-        console.log('Delete successful:', result);
-        
+        console.log("Delete successful:", result);
+
         // Refresh the server images display after successful deletion
         fetchAllImages().then((images) => {
           if (images.length > 0) {
             displayServerImages(images);
           } else {
-            document.getElementById("dynamicSlides").innerHTML = "<p class='text-gray-500 text-center'>No images found on server.</p>";
+            document.getElementById("dynamicSlides").innerHTML =
+              "<p class='text-gray-500 text-center'>No images found on server.</p>";
           }
         });
       })
       .catch((error) => {
-        console.error('Delete error:', error);
+        console.error("Delete error:", error);
         alert(`Failed to delete image: ${error.message}`);
       });
   }
@@ -202,7 +206,7 @@ function handleDeleteImage(imageId) {
 // Image upload function
 function uploadImage(file, slideIndex) {
   if (!file) {
-    console.error('No file selected');
+    console.error("No file selected");
     return;
   }
 
@@ -212,17 +216,17 @@ function uploadImage(file, slideIndex) {
   const requestOptions = {
     method: "POST",
     body: formdata,
-    redirect: "follow"
+    redirect: "follow",
   };
 
   // Show loading state
   const uploadBtn = document.getElementById(`dynSlide${slideIndex}UploadBtn`);
   if (uploadBtn) {
-    uploadBtn.textContent = 'Uploading...';
+    uploadBtn.textContent = "Uploading...";
     uploadBtn.disabled = true;
   }
 
-  fetch("http://localhost:3000/api/upload-image", requestOptions)
+  fetch("https://api2.firm777.com/api/upload-image", requestOptions)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -230,77 +234,48 @@ function uploadImage(file, slideIndex) {
       return response.json(); // Changed from .text() to .json()
     })
     .then((result) => {
-      console.log('Upload successful:', result);
-      
+      console.log("Upload successful:", result);
+
       // Store the uploaded image data
       if (result.success && result.data) {
         const imageData = {
           id: result.data.id,
           imageUrl: result.data.imageUrl,
           uploadDate: result.data.uploadDate,
-          slideIndex: slideIndex
+          slideIndex: slideIndex,
         };
-        
+
         // Save to localStorage for persistence
-        let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
+        let uploadedImages = JSON.parse(
+          localStorage.getItem("uploadedImages") || "[]"
+        );
         uploadedImages.push(imageData);
-        localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
-        
-        alert(`Image uploaded successfully for Slide ${slideIndex}!\nURL: ${result.data.imageUrl}`);
+        localStorage.setItem("uploadedImages", JSON.stringify(uploadedImages));
+
+        alert(
+          `Image uploaded successfully for Slide ${slideIndex}!\nURL: ${result.data.imageUrl}`
+        );
       } else {
         alert(`Image uploaded successfully for Slide ${slideIndex}`);
       }
-      
+
       // Reset button state
       if (uploadBtn) {
-        uploadBtn.textContent = 'Upload';
+        uploadBtn.textContent = "Upload";
         uploadBtn.disabled = false;
       }
     })
     .catch((error) => {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       alert(`Upload failed: ${error.message}`);
-      
+
       // Reset button state
       if (uploadBtn) {
-        uploadBtn.textContent = 'Upload';
+        uploadBtn.textContent = "Upload";
         uploadBtn.disabled = false;
       }
     });
 }
-
-axios("https://firm777.com/Phone.json")
-  .then((result) => {
-    console.log(result);
-    userData = result.data.user;
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-
-axios
-  .get("https://api-firm777-com.onrender.com/users")
-  .then((result) => {
-    console.log(result);
-    result.data.map((items, index) => {
-      console.log(items);
-
-      var table = document.getElementById("myTable");
-      var row = table.insertRow(0);
-      var cell1 = row.insertCell(0);
-      var cell2 = row.insertCell(1);
-      var cell3 = row.insertCell(2);
-      cell1.innerHTML = items.Name;
-      cell2.innerHTML = items.Phone;
-      cell3.innerHTML = items.Promocode;
-      cell1.classList = "whitespace-nowrap px-4 py-2 text-gray-700";
-      cell2.classList = "whitespace-nowrap px-4 py-2 text-gray-700";
-      cell3.classList = "whitespace-nowrap px-4 py-2 text-gray-700";
-    });
-  })
-  .catch((err) => {
-    console.log(err);
-  });
 
 const login = (event) => {
   event.preventDefault();
@@ -326,7 +301,7 @@ const updatePhone = (event) => {
       Phone: phone,
     })
     .then((result) => {
-      alert("Change number is :-- ",result.data.Phone);
+      alert("Change number is :-- ", result.data.Phone);
       window.location.replace("./index.html");
     })
     .catch((err) => {
@@ -370,11 +345,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const carouselInput = document.getElementById("carouselInput");
   const carouselPreview = document.getElementById("carouselPreview");
 
-  if (tabMainBtn && tabCarouselBtn && tabSubdomainBtn && tabMain && tabCarousel && tabSubdomain) {
+  if (
+    tabMainBtn &&
+    tabCarouselBtn &&
+    tabSubdomainBtn &&
+    tabMain &&
+    tabCarousel &&
+    tabSubdomain
+  ) {
     // Mobile nav buttons (topbar)
     const mobileTabMainBtn = document.getElementById("mobileTabMainBtn");
-    const mobileTabCarouselBtn = document.getElementById("mobileTabCarouselBtn");
-    const mobileTabSubdomainBtn = document.getElementById("mobileTabSubdomainBtn");
+    const mobileTabCarouselBtn = document.getElementById(
+      "mobileTabCarouselBtn"
+    );
+    const mobileTabSubdomainBtn = document.getElementById(
+      "mobileTabSubdomainBtn"
+    );
 
     const activateMain = () => {
       tabMain.style.display = "block";
@@ -411,7 +397,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileTabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
         mobileTabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
       }
-      
+
       // Auto-load server images when carousel tab is activated
       fetchAllImages().then((images) => {
         if (images.length > 0) {
@@ -436,17 +422,19 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileTabCarouselBtn.classList.remove("bg-indigo-600", "text-white");
         mobileTabCarouselBtn.classList.add("bg-gray-200", "text-gray-800");
       }
-      
+
       // Auto-load subdomains when subdomain tab is activated
-      fetchSubdomains().then((subdomains) => {
-        if (subdomains.length > 0) {
-          renderTable(subdomains);
-        } else {
-          renderTable(); // Fallback to localStorage
-        }
-      }).catch(() => {
-        renderTable(); // Fallback to localStorage on error
-      });
+      fetchSubdomains()
+        .then((subdomains) => {
+          if (subdomains.length > 0) {
+            renderTable(subdomains);
+          } else {
+            renderTable(); // Fallback to localStorage
+          }
+        })
+        .catch(() => {
+          renderTable(); // Fallback to localStorage on error
+        });
     };
 
     tabMainBtn.addEventListener("click", function (e) {
@@ -488,8 +476,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Subdomain number -> URL generator
   const sdName = document.getElementById("sdName");
   const sdPhone = document.getElementById("sdPhone");
-  const sdAddUpdateBtn = document.getElementById("sdAddUpdateBtn");
+  const sdAddBtn = document.getElementById("sdAddBtn");
+  const sdUpdateBtn = document.getElementById("sdUpdateBtn");
   const sdClearBtn = document.getElementById("sdClearBtn");
+  const sdSubmitPhoneBtn = document.getElementById("sdSubmitPhoneBtn");
   const sdTableBody = document.getElementById("sdTableBody");
   const sdLookupName = document.getElementById("sdLookupName");
   const sdLookupBtn = document.getElementById("sdLookupBtn");
@@ -508,14 +498,31 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem("sdMappings", JSON.stringify(obj));
   }
 
+  // Helper functions for button state management
+  function setAddMode() {
+    sdAddBtn.style.display = "inline-block";
+    sdUpdateBtn.style.display = "none";
+    sdAddBtn.textContent = "Add New";
+    sdUpdateBtn.removeAttribute("data-editing-id");
+  }
+
+  function setEditMode(subdomainId, subdomainName, phoneNumber) {
+    sdAddBtn.style.display = "none";
+    sdUpdateBtn.style.display = "inline-block";
+    sdUpdateBtn.textContent = "Update";
+    sdUpdateBtn.setAttribute("data-editing-id", subdomainId);
+    sdName.value = subdomainName;
+    sdPhone.value = phoneNumber;
+  }
+
   // Subdomain API functions
   function fetchSubdomains() {
     const requestOptions = {
       method: "GET",
-      redirect: "follow"
+      redirect: "follow",
     };
 
-    return fetch("http://localhost:3000/api/subdomains", requestOptions)
+    return fetch("https://api2.firm777.com/api/subdomains", requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -523,11 +530,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then((result) => {
-        console.log('Fetched subdomains:', result);
+        console.log("Fetched subdomains:", result);
         return result.data || [];
       })
       .catch((error) => {
-        console.error('Error fetching subdomains:', error);
+        console.error("Error fetching subdomains:", error);
         return [];
       });
   }
@@ -537,18 +544,18 @@ document.addEventListener("DOMContentLoaded", function () {
     myHeaders.append("Content-Type", "application/json");
 
     const raw = JSON.stringify({
-      "subdomain_name": subdomainName,
-      "phone_number": phoneNumber
+      subdomain_name: subdomainName,
+      phone_number: phoneNumber,
     });
 
     const requestOptions = {
       method: "POST",
       headers: myHeaders,
       body: raw,
-      redirect: "follow"
+      redirect: "follow",
     };
 
-    return fetch("http://localhost:3000/api/subdomains", requestOptions)
+    return fetch("https://api2.firm777.com/api/subdomains", requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -556,11 +563,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then((result) => {
-        console.log('Subdomain created:', result);
+        console.log("Subdomain created:", result);
         return result;
       })
       .catch((error) => {
-        console.error('Error creating subdomain:', error);
+        console.error("Error creating subdomain:", error);
         throw error;
       });
   }
@@ -570,18 +577,21 @@ document.addEventListener("DOMContentLoaded", function () {
     myHeaders.append("Content-Type", "application/json");
 
     const raw = JSON.stringify({
-      "subdomain_name": subdomainName,
-      "phone_number": phoneNumber
+      subdomain_name: subdomainName,
+      phone_number: phoneNumber,
     });
 
     const requestOptions = {
       method: "PUT",
       headers: myHeaders,
       body: raw,
-      redirect: "follow"
+      redirect: "follow",
     };
 
-    return fetch(`http://localhost:3000/api/subdomains/${subdomainId}`, requestOptions)
+    return fetch(
+      `https://api2.firm777.com/api/subdomains/${subdomainId}`,
+      requestOptions
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -589,11 +599,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then((result) => {
-        console.log('Subdomain updated:', result);
+        console.log("Subdomain updated:", result);
         return result;
       })
       .catch((error) => {
-        console.error('Error updating subdomain:', error);
+        console.error("Error updating subdomain:", error);
         throw error;
       });
   }
@@ -601,10 +611,13 @@ document.addEventListener("DOMContentLoaded", function () {
   function deleteSubdomain(subdomainId) {
     const requestOptions = {
       method: "DELETE",
-      redirect: "follow"
+      redirect: "follow",
     };
 
-    return fetch(`http://localhost:3000/api/subdomains/${subdomainId}`, requestOptions)
+    return fetch(
+      `https://api2.firm777.com/api/subdomains/${subdomainId}`,
+      requestOptions
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -612,17 +625,52 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.text();
       })
       .then((result) => {
-        console.log('Subdomain deleted:', result);
+        console.log("Subdomain deleted:", result);
         return result;
       })
       .catch((error) => {
-        console.error('Error deleting subdomain:', error);
+        console.error("Error deleting subdomain:", error);
+        throw error;
+      });
+  }
+
+  function submitPhoneToSubdomain(subdomainId, phoneNumber) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      phone_number: phoneNumber,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    return fetch(
+      `https://api2.firm777.com/api/subdomains/${subdomainId}`,
+      requestOptions
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        console.log("Phone submitted to subdomain:", result);
+        return result;
+      })
+      .catch((error) => {
+        console.error("Error submitting phone to subdomain:", error);
         throw error;
       });
   }
   function renderTable(subdomains = null) {
     if (!sdTableBody) return;
-    
+
     if (subdomains) {
       // Render server data
       sdTableBody.innerHTML = "";
@@ -657,29 +705,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  if (sdAddUpdateBtn && sdName && sdPhone) {
-    sdAddUpdateBtn.addEventListener("click", function (e) {
+  // Add button event listener
+  if (sdAddBtn && sdName && sdPhone) {
+    sdAddBtn.addEventListener("click", function (e) {
       e.preventDefault();
       const name = (sdName.value || "").trim();
       const phone = (sdPhone.value || "").trim();
-      if (!name || !phone) return;
       
-      // Check if we're editing (button text indicates mode)
-      const isEditing = sdAddUpdateBtn.textContent.includes('Update');
-      const editingId = sdAddUpdateBtn.getAttribute('data-editing-id');
-      
+      if (!name || !phone) {
+        alert("Please enter both subdomain name and phone number");
+        return;
+      }
+
       // Show loading state
-      const originalText = sdAddUpdateBtn.textContent;
-      sdAddUpdateBtn.textContent = isEditing ? 'Updating...' : 'Creating...';
-      sdAddUpdateBtn.disabled = true;
-      
-      const apiCall = isEditing 
-        ? updateSubdomain(editingId, name, phone)
-        : createSubdomain(name, phone);
-      
-      apiCall
+      const originalText = sdAddBtn.textContent;
+      sdAddBtn.textContent = "Creating...";
+      sdAddBtn.disabled = true;
+
+      createSubdomain(name, phone)
         .then((result) => {
-          console.log('Subdomain operation successful:', result);
+          console.log("Subdomain created successfully:", result);
+          alert(`Subdomain ${name} created successfully with phone ${phone}`);
+          
           // Refresh the table from server
           return fetchSubdomains();
         })
@@ -687,17 +734,60 @@ document.addEventListener("DOMContentLoaded", function () {
           renderTable(subdomains);
           sdName.value = "";
           sdPhone.value = "";
-          // Reset button state
-          sdAddUpdateBtn.textContent = 'Add / Update';
-          sdAddUpdateBtn.disabled = false;
-          sdAddUpdateBtn.removeAttribute('data-editing-id');
+          setAddMode(); // Reset to add mode
         })
         .catch((error) => {
-          console.error('Subdomain operation failed:', error);
-          alert(`Operation failed: ${error.message}`);
+          console.error("Subdomain creation failed:", error);
+          alert(`Failed to create subdomain: ${error.message}`);
+        })
+        .finally(() => {
           // Reset button state
-          sdAddUpdateBtn.textContent = originalText;
-          sdAddUpdateBtn.disabled = false;
+          sdAddBtn.textContent = originalText;
+          sdAddBtn.disabled = false;
+        });
+    });
+  }
+
+  // Update button event listener
+  if (sdUpdateBtn && sdName && sdPhone) {
+    sdUpdateBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const name = (sdName.value || "").trim();
+      const phone = (sdPhone.value || "").trim();
+      const editingId = sdUpdateBtn.getAttribute("data-editing-id");
+      
+      if (!name || !phone || !editingId) {
+        alert("Please enter both subdomain name and phone number");
+        return;
+      }
+
+      // Show loading state
+      const originalText = sdUpdateBtn.textContent;
+      sdUpdateBtn.textContent = "Updating...";
+      sdUpdateBtn.disabled = true;
+
+      updateSubdomain(editingId, name, phone)
+        .then((result) => {
+          console.log("Subdomain updated successfully:", result);
+          alert(`Subdomain ${name} updated successfully with phone ${phone}`);
+          
+          // Refresh the table from server
+          return fetchSubdomains();
+        })
+        .then((subdomains) => {
+          renderTable(subdomains);
+          sdName.value = "";
+          sdPhone.value = "";
+          setAddMode(); // Reset to add mode
+        })
+        .catch((error) => {
+          console.error("Subdomain update failed:", error);
+          alert(`Failed to update subdomain: ${error.message}`);
+        })
+        .finally(() => {
+          // Reset button state
+          sdUpdateBtn.textContent = originalText;
+          sdUpdateBtn.disabled = false;
         });
     });
   }
@@ -706,6 +796,63 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       sdName.value = "";
       sdPhone.value = "";
+      setAddMode(); // Reset to add mode when clearing
+    });
+  }
+
+  if (sdSubmitPhoneBtn && sdName && sdPhone) {
+    sdSubmitPhoneBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const name = (sdName.value || "").trim();
+      const phone = (sdPhone.value || "").trim();
+
+      if (!name || !phone) {
+        alert("Please enter both subdomain name and phone number");
+        return;
+      }
+
+      // Show loading state
+      const originalText = sdSubmitPhoneBtn.textContent;
+      sdSubmitPhoneBtn.textContent = "Submitting...";
+      sdSubmitPhoneBtn.disabled = true;
+
+      // First, try to find the subdomain by name
+      fetchSubdomains()
+        .then((subdomains) => {
+          const foundSubdomain = subdomains.find(
+            (sub) => sub.subdomain_name === name
+          );
+          if (foundSubdomain) {
+            // Submit phone to existing subdomain
+            return submitPhoneToSubdomain(foundSubdomain._id, phone);
+          } else {
+            // If subdomain doesn't exist, create it first
+            return createSubdomain(name, phone);
+          }
+        })
+        .then((result) => {
+          console.log("Phone submission successful:", result);
+          alert(
+            `Phone number ${phone} successfully submitted to subdomain ${name}`
+          );
+
+          // Refresh the table
+          return fetchSubdomains();
+        })
+        .then((subdomains) => {
+          renderTable(subdomains);
+          sdName.value = "";
+          sdPhone.value = "";
+        })
+        .catch((error) => {
+          console.error("Phone submission failed:", error);
+          alert(`Failed to submit phone: ${error.message}`);
+        })
+        .finally(() => {
+          // Reset button state
+          sdSubmitPhoneBtn.textContent = originalText;
+          sdSubmitPhoneBtn.disabled = false;
+        });
     });
   }
   if (sdTableBody) {
@@ -716,28 +863,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const editId = target.getAttribute("data-edit-id");
         const editName = target.getAttribute("data-edit-name");
         const editPhone = target.getAttribute("data-edit-phone");
-        
+
         // Handle server data delete
         const deleteId = target.getAttribute("data-delete-id");
-        
+
         // Handle localStorage data (fallback)
         const editKey = target.getAttribute("data-edit");
         const deleteKey = target.getAttribute("data-delete");
-        
+
         if (editId && editName && editPhone) {
           // Edit server data
-          sdName.value = editName;
-          sdPhone.value = editPhone;
-          sdAddUpdateBtn.textContent = 'Update / Save';
-          sdAddUpdateBtn.setAttribute('data-editing-id', editId);
+          setEditMode(editId, editName, editPhone);
         } else if (editKey) {
           // Edit localStorage data (fallback)
           const data = loadMappings();
-          sdName.value = editKey;
-          sdPhone.value = data[editKey] || "";
-          sdAddUpdateBtn.textContent = 'Update / Save';
+          setEditMode(editKey, editKey, data[editKey] || "");
         }
-        
+
         if (deleteId) {
           // Delete server data using DELETE API
           if (confirm(`Are you sure you want to delete this subdomain?`)) {
@@ -750,7 +892,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 renderTable(subdomains);
               })
               .catch((error) => {
-                console.error('Delete failed:', error);
+                console.error("Delete failed:", error);
                 alert(`Failed to delete subdomain: ${error.message}`);
               });
           }
@@ -769,27 +911,31 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       const name = (sdLookupName.value || "").trim();
       if (!name) return;
-      
+
       // Try to find in server data first
-      fetchSubdomains().then((subdomains) => {
-        const foundSubdomain = subdomains.find(sub => sub.subdomain_name === name);
-        if (foundSubdomain) {
-          sdLookupPhone.value = foundSubdomain.phone_number;
-          subdomainUrl.value = `https://${name}.firm777.com`;
-        } else {
-          // Fallback to localStorage
+      fetchSubdomains()
+        .then((subdomains) => {
+          const foundSubdomain = subdomains.find(
+            (sub) => sub.subdomain_name === name
+          );
+          if (foundSubdomain) {
+            sdLookupPhone.value = foundSubdomain.phone_number;
+            subdomainUrl.value = `https://${name}.firm777.com`;
+          } else {
+            // Fallback to localStorage
+            const data = loadMappings();
+            const phone = data[name] || "";
+            sdLookupPhone.value = phone;
+            subdomainUrl.value = name ? `https://${name}.firm777.com` : "";
+          }
+        })
+        .catch(() => {
+          // Fallback to localStorage on error
           const data = loadMappings();
           const phone = data[name] || "";
           sdLookupPhone.value = phone;
           subdomainUrl.value = name ? `https://${name}.firm777.com` : "";
-        }
-      }).catch(() => {
-        // Fallback to localStorage on error
-        const data = loadMappings();
-        const phone = data[name] || "";
-        sdLookupPhone.value = phone;
-        subdomainUrl.value = name ? `https://${name}.firm777.com` : "";
-      });
+        });
     });
   }
   if (copySubdomainBtn && subdomainUrl) {
@@ -834,14 +980,14 @@ document.addEventListener("DOMContentLoaded", function () {
     slide1Input.addEventListener("change", function () {
       const file = this.files && this.files[0];
       if (!file) return;
-      
+
       // Show preview first
       const reader = new FileReader();
       reader.onload = function (e) {
         slide1Preview.src = e.target.result;
       };
       reader.readAsDataURL(file);
-      
+
       // Upload the file to server
       uploadImage(file, 1);
     });
@@ -893,7 +1039,8 @@ document.addEventListener("DOMContentLoaded", function () {
     addSlideBtn.addEventListener("click", function (e) {
       e.preventDefault();
       const slideIndex = dynamicSlides.children.length + 1; // start at 1 by default
-      const { card, editId, uploadId, inputId, imgId } = createSlideCard(slideIndex);
+      const { card, editId, uploadId, inputId, imgId } =
+        createSlideCard(slideIndex);
       dynamicSlides.appendChild(card);
 
       const editBtn = document.getElementById(editId);
@@ -915,14 +1062,14 @@ document.addEventListener("DOMContentLoaded", function () {
       fileInput.addEventListener("change", function () {
         const file = this.files && this.files[0];
         if (!file) return;
-        
+
         // Show preview first
         const reader = new FileReader();
         reader.onload = function (e) {
           img.src = e.target.result;
         };
         reader.readAsDataURL(file);
-        
+
         // Upload the file to server
         uploadImage(file, slideIndex);
       });
@@ -936,18 +1083,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
   // Event delegation for edit and delete buttons
   if (dynamicSlides) {
     dynamicSlides.addEventListener("click", function (e) {
       if (e.target && e.target.getAttribute) {
         const editId = e.target.getAttribute("data-edit");
         const deleteId = e.target.getAttribute("data-delete");
-        
+
         if (editId) {
           handleEditImage(editId);
         }
-        
+
         if (deleteId) {
           handleDeleteImage(deleteId);
         }
@@ -957,7 +1103,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load uploaded images on page load
   loadUploadedImages();
-  
+
   // Initial render of subdomain table (will show localStorage data initially)
   renderTable();
+  
+  // Initialize button states
+  setAddMode();
 });
