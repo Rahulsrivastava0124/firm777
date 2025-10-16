@@ -72,6 +72,8 @@
         <!-- Content -->
         <main class="p-4">
           <div id="tab-content-main" class="mt-2">
+
+            <!-- Users Table -->
             <div
               class="overflow-x-auto rounded-lg border border-gray-200 bg-white"
             >
@@ -84,7 +86,12 @@
                     <th
                       class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                     >
-                      Name
+                      Profile
+                    </th>
+                    <th
+                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                    >
+                      Subdomain
                     </th>
                     <th
                       class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
@@ -94,8 +101,10 @@
                     <th
                       class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                     >
-                      Promo Code
+                      Domain
                     </th>
+                    <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"></th>
+                    <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200" id="myTable"></tbody>
@@ -159,6 +168,14 @@
                     />
                   </div>
                 </div>
+                <!-- Profile image upload -->
+                <div>
+                  <label for="sdProfile" class="block text-sm text-gray-700 mb-1">Profile image (PNG/GIF, max 5MB)</label>
+                  <div class="flex items-center gap-3">
+                    <img id="sdProfilePreview" src="https://via.placeholder.com/64x64?text=IMG" alt="Profile" class="w-16 h-16 rounded-full object-cover border" />
+                    <input type="file" id="sdProfile" accept=".png,.gif" class="text-sm" />
+                  </div>
+                </div>
                 <div class="flex items-center gap-2">
                   <button
                     id="sdAddBtn"
@@ -189,6 +206,7 @@
                     <table class="min-w-full text-sm">
                       <thead class="bg-gray-50">
                         <tr>
+                          <th class="px-3 py-2 text-left">Profile</th>
                           <th class="px-3 py-2 text-left">Subdomain</th>
                           <th class="px-3 py-2 text-left">Phone</th>
                           <th class="px-3 py-2 text-left">Actions</th>

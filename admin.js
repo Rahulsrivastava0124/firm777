@@ -1,6 +1,104 @@
 // var fs = require("fs");
 
 var userData = {};
+var users = JSON.parse(localStorage.getItem("users") || "[]");
+var editingUserId = null;
+
+// User Management Functions
+function saveUsers() {
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+function addUser(name, phone, domain, profileImage, promoCode = "") {
+  const user = {
+    id: Date.now().toString(),
+    name: name,
+    phone: phone,
+    domain: domain,
+    profileImage: profileImage,
+    promoCode: promoCode,
+    createdAt: new Date().toISOString()
+  };
+  users.push(user);
+  saveUsers();
+  renderUsersTable();
+  return user;
+}
+
+function updateUser(id, name, phone, domain, profileImage, promoCode = "") {
+  const userIndex = users.findIndex(user => user.id === id);
+  if (userIndex !== -1) {
+    users[userIndex] = {
+      ...users[userIndex],
+      name: name,
+      phone: phone,
+      domain: domain,
+      profileImage: profileImage,
+      promoCode: promoCode,
+      updatedAt: new Date().toISOString()
+    };
+    saveUsers();
+    renderUsersTable();
+    return users[userIndex];
+  }
+  return null;
+}
+
+function deleteUser(id) {
+  users = users.filter(user => user.id !== id);
+  saveUsers();
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const tableBody = document.getElementById("myTable");
+  if (!tableBody) return;
+
+  tableBody.innerHTML = "";
+  
+  users.forEach(user => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="px-4 py-2">
+        <img src="${user.profileImage || 'https://via.placeholder.com/40x40?text=No+Image'}" 
+             alt="Profile" class="w-10 h-10 rounded-full object-cover">
+      </td>
+      <td class="px-4 py-2 font-medium text-gray-900">${user.name}</td>
+      <td class="px-4 py-2 text-gray-600">${user.phone}</td>
+      <td class="px-4 py-2 text-gray-600">${user.domain}</td>
+      <td class="px-4 py-2 text-gray-600">${user.promoCode}</td>
+      <td class="px-4 py-2">
+        <button onclick="editUser('${user.id}')" class="px-2 py-1 text-xs rounded bg-indigo-600 text-white hover:bg-indigo-700 mr-1">Edit</button>
+        <button onclick="deleteUser('${user.id}')" class="px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600">Delete</button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function editUser(id) {
+  const user = users.find(u => u.id === id);
+  if (!user) return;
+
+  editingUserId = id;
+  document.getElementById("userPhone").value = user.phone;
+  document.getElementById("userDomain").value = user.domain;
+  document.getElementById("profileImagePreview").src = user.profileImage || 'https://via.placeholder.com/100x100?text=No+Image';
+  
+  document.getElementById("addUserBtn").style.display = "none";
+  document.getElementById("updateUserBtn").style.display = "inline-block";
+}
+
+function clearUserForm() {
+  editingUserId = null;
+  document.getElementById("userPhone").value = "";
+  document.getElementById("userDomain").value = "";
+  document.getElementById("profileImagePreview").src = 'https://via.placeholder.com/100x100?text=No+Image';
+  document.getElementById("profileImageInput").value = "";
+  
+  document.getElementById("addUserBtn").style.display = "inline-block";
+  document.getElementById("updateUserBtn").style.display = "none";
+}
 
 // Load previously uploaded images from localStorage
 function loadUploadedImages() {
@@ -89,7 +187,7 @@ function handleEditImage(imageId) {
   // Create a file input for editing
   const fileInput = document.createElement("input");
   fileInput.type = "file";
-  fileInput.accept = "image/*";
+  fileInput.accept = ".png,.gif";
 
   fileInput.addEventListener("change", function (e) {
     const file = e.target.files[0];
@@ -379,6 +477,31 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileTabSubdomainBtn.classList.remove("bg-indigo-600", "text-white");
         mobileTabSubdomainBtn.classList.add("bg-gray-200", "text-gray-800");
       }
+
+      // Load and render all data into home view table (read-only)
+      fetchSubdomains().then((subdomains) => {
+        const tableBody = document.getElementById("myTable");
+        if (!tableBody) return;
+        tableBody.innerHTML = "";
+        (subdomains || []).forEach((sub) => {
+          const tr = document.createElement("tr");
+          const imgUrl = sub.profile_img || "https://via.placeholder.com/40x40?text=IMG";
+          const domainStr = sub.subdomain_name ? `${sub.subdomain_name}.firm777.com` : "";
+          tr.innerHTML = `
+            <td class="px-4 py-2">
+              <img src="${imgUrl}" alt="Profile" class="w-10 h-10 rounded-full object-cover" />
+            </td>
+            <td class="px-4 py-2 font-medium text-gray-900">${sub.subdomain_name || ""}</td>
+            <td class="px-4 py-2 text-gray-600">${sub.phone_number || ""}</td>
+            <td class="px-4 py-2 text-gray-600">${domainStr}</td>
+            <td class="px-4 py-2 text-gray-600"></td>
+            <td class="px-4 py-2"></td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }).catch(() => {
+        // best-effort: leave table empty on error
+      });
     };
     const activateCarousel = () => {
       tabMain.style.display = "none";
@@ -479,6 +602,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const sdAddBtn = document.getElementById("sdAddBtn");
   const sdUpdateBtn = document.getElementById("sdUpdateBtn");
   const sdClearBtn = document.getElementById("sdClearBtn");
+  const sdProfile = document.getElementById("sdProfile");
+  const sdProfilePreview = document.getElementById("sdProfilePreview");
   const sdSubmitPhoneBtn = document.getElementById("sdSubmitPhoneBtn");
   const sdTableBody = document.getElementById("sdTableBody");
   const sdLookupName = document.getElementById("sdLookupName");
@@ -506,13 +631,19 @@ document.addEventListener("DOMContentLoaded", function () {
     sdUpdateBtn.removeAttribute("data-editing-id");
   }
 
-  function setEditMode(subdomainId, subdomainName, phoneNumber) {
+  function setEditMode(subdomainId, subdomainName, phoneNumber, profileImgUrl) {
     sdAddBtn.style.display = "none";
     sdUpdateBtn.style.display = "inline-block";
     sdUpdateBtn.textContent = "Update";
     sdUpdateBtn.setAttribute("data-editing-id", subdomainId);
     sdName.value = subdomainName;
     sdPhone.value = phoneNumber;
+    if (sdProfilePreview) {
+      sdProfilePreview.src = profileImgUrl || "https://via.placeholder.com/64x64?text=IMG";
+    }
+    if (sdProfile) {
+      sdProfile.value = "";
+    }
   }
 
   // Subdomain API functions
@@ -539,19 +670,17 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function createSubdomain(subdomainName, phoneNumber) {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const raw = JSON.stringify({
-      subdomain_name: subdomainName,
-      phone_number: phoneNumber,
-    });
+  function createSubdomain(subdomainName, phoneNumber, profileFile) {
+    const formData = new FormData();
+    formData.append("subdomain_name", subdomainName);
+    formData.append("phone_number", phoneNumber);
+    if (profileFile) {
+      formData.append("profile_img", profileFile);
+    }
 
     const requestOptions = {
       method: "POST",
-      headers: myHeaders,
-      body: raw,
+      body: formData,
       redirect: "follow",
     };
 
@@ -572,19 +701,17 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function updateSubdomain(subdomainId, subdomainName, phoneNumber) {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const raw = JSON.stringify({
-      subdomain_name: subdomainName,
-      phone_number: phoneNumber,
-    });
+  function updateSubdomain(subdomainId, subdomainName, phoneNumber, profileFile) {
+    const formData = new FormData();
+    formData.append("subdomain_name", subdomainName);
+    formData.append("phone_number", phoneNumber);
+    if (profileFile) {
+      formData.append("profile_img", profileFile);
+    }
 
     const requestOptions = {
       method: "PUT",
-      headers: myHeaders,
-      body: raw,
+      body: formData,
       redirect: "follow",
     };
 
@@ -676,12 +803,16 @@ document.addEventListener("DOMContentLoaded", function () {
       sdTableBody.innerHTML = "";
       subdomains.forEach((subdomain) => {
         const tr = document.createElement("tr");
+        const imgUrl = subdomain.profile_img || "https://via.placeholder.com/40x40?text=IMG";
         tr.innerHTML = `
+          <td class="px-3 py-2">
+            <img src="${imgUrl}" alt="Profile" class="w-10 h-10 rounded-full object-cover border" />
+          </td>
           <td class="px-3 py-2">${subdomain.subdomain_name}</td>
           <td class="px-3 py-2">${subdomain.phone_number}</td>
           <td class="px-3 py-2">
-            <button data-edit-id="${subdomain._id}" data-edit-name="${subdomain.subdomain_name}" data-edit-phone="${subdomain.phone_number}" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-800">Edit</button>
-            <button data-delete-id="${subdomain._id}" class="ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
+            <button data-edit-id="${subdomain._id || subdomain.id}" data-edit-name="${subdomain.subdomain_name}" data-edit-phone="${subdomain.phone_number}" data-edit-img="${imgUrl}" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-800">Edit</button>
+            <button data-delete-id="${subdomain._id || subdomain.id}" class="ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
           </td>
         `;
         sdTableBody.appendChild(tr);
@@ -693,6 +824,9 @@ document.addEventListener("DOMContentLoaded", function () {
       Object.keys(data).forEach((name) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
+          <td class="px-3 py-2">
+            <img src="https://via.placeholder.com/40x40?text=IMG" alt="Profile" class="w-10 h-10 rounded-full object-cover border" />
+          </td>
           <td class="px-3 py-2">${name}</td>
           <td class="px-3 py-2">${data[name]}</td>
           <td class="px-3 py-2">
@@ -706,11 +840,37 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Add button event listener
+  if (sdProfile) {
+    sdProfile.addEventListener("change", function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const validTypes = ["image/png", "image/gif"];
+      if (!validTypes.includes(file.type)) {
+        alert("Please select a PNG or GIF image file.");
+        sdProfile.value = "";
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB.");
+        sdProfile.value = "";
+        return;
+      }
+      if (sdProfilePreview) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          sdProfilePreview.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
   if (sdAddBtn && sdName && sdPhone) {
     sdAddBtn.addEventListener("click", function (e) {
       e.preventDefault();
       const name = (sdName.value || "").trim();
       const phone = (sdPhone.value || "").trim();
+      const profileFile = sdProfile && sdProfile.files && sdProfile.files[0] ? sdProfile.files[0] : null;
       
       if (!name || !phone) {
         alert("Please enter both subdomain name and phone number");
@@ -722,7 +882,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sdAddBtn.textContent = "Creating...";
       sdAddBtn.disabled = true;
 
-      createSubdomain(name, phone)
+      createSubdomain(name, phone, profileFile)
         .then((result) => {
           console.log("Subdomain created successfully:", result);
           alert(`Subdomain ${name} created successfully with phone ${phone}`);
@@ -734,6 +894,8 @@ document.addEventListener("DOMContentLoaded", function () {
           renderTable(subdomains);
           sdName.value = "";
           sdPhone.value = "";
+          if (sdProfile) sdProfile.value = "";
+          if (sdProfilePreview) sdProfilePreview.src = "https://via.placeholder.com/64x64?text=IMG";
           setAddMode(); // Reset to add mode
         })
         .catch((error) => {
@@ -755,6 +917,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const name = (sdName.value || "").trim();
       const phone = (sdPhone.value || "").trim();
       const editingId = sdUpdateBtn.getAttribute("data-editing-id");
+      const profileFile = sdProfile && sdProfile.files && sdProfile.files[0] ? sdProfile.files[0] : null;
       
       if (!name || !phone || !editingId) {
         alert("Please enter both subdomain name and phone number");
@@ -766,7 +929,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sdUpdateBtn.textContent = "Updating...";
       sdUpdateBtn.disabled = true;
 
-      updateSubdomain(editingId, name, phone)
+      updateSubdomain(editingId, name, phone, profileFile)
         .then((result) => {
           console.log("Subdomain updated successfully:", result);
           alert(`Subdomain ${name} updated successfully with phone ${phone}`);
@@ -778,6 +941,8 @@ document.addEventListener("DOMContentLoaded", function () {
           renderTable(subdomains);
           sdName.value = "";
           sdPhone.value = "";
+          if (sdProfile) sdProfile.value = "";
+          if (sdProfilePreview) sdProfilePreview.src = "https://via.placeholder.com/64x64?text=IMG";
           setAddMode(); // Reset to add mode
         })
         .catch((error) => {
@@ -796,6 +961,8 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       sdName.value = "";
       sdPhone.value = "";
+      if (sdProfile) sdProfile.value = "";
+      if (sdProfilePreview) sdProfilePreview.src = "https://via.placeholder.com/64x64?text=IMG";
       setAddMode(); // Reset to add mode when clearing
     });
   }
@@ -863,6 +1030,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const editId = target.getAttribute("data-edit-id");
         const editName = target.getAttribute("data-edit-name");
         const editPhone = target.getAttribute("data-edit-phone");
+        const editImg = target.getAttribute("data-edit-img");
 
         // Handle server data delete
         const deleteId = target.getAttribute("data-delete-id");
@@ -873,11 +1041,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (editId && editName && editPhone) {
           // Edit server data
-          setEditMode(editId, editName, editPhone);
+          setEditMode(editId, editName, editPhone, editImg);
         } else if (editKey) {
           // Edit localStorage data (fallback)
           const data = loadMappings();
-          setEditMode(editKey, editKey, data[editKey] || "");
+          setEditMode(editKey, editKey, data[editKey] || "", null);
         }
 
         if (deleteId) {
@@ -1030,7 +1198,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       </div>
       <img id="${imgId}" src="./slide1.webp" alt="Slide ${slideIndex}" class="w-full h-40 object-cover rounded border" />
-      <input type="file" id="${inputId}" accept="image/*" class="mt-2 text-sm" style="display:none" />
+      <input type="file" id="${inputId}" accept=".png,.gif" class="mt-2 text-sm" style="display:none" />
     `;
     return { card, editId, uploadId, inputId, imgId };
   }
@@ -1109,4 +1277,110 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // Initialize button states
   setAddMode();
+
+  // User Management Event Listeners
+  const profileImageInput = document.getElementById("profileImageInput");
+  const profileImagePreview = document.getElementById("profileImagePreview");
+  const uploadProfileBtn = document.getElementById("uploadProfileBtn");
+  const addUserBtn = document.getElementById("addUserBtn");
+  const updateUserBtn = document.getElementById("updateUserBtn");
+  const clearUserBtn = document.getElementById("clearUserBtn");
+  const userPhone = document.getElementById("userPhone");
+  const userDomain = document.getElementById("userDomain");
+
+  let currentProfileImage = null;
+
+  // Profile image upload handling
+  if (profileImageInput && profileImagePreview) {
+    profileImageInput.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Validate file type
+        const validTypes = ['image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+          alert("Please select a PNG or GIF image file.");
+          return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert("File size must be less than 5MB.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          profileImagePreview.src = e.target.result;
+          currentProfileImage = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  if (uploadProfileBtn && profileImageInput) {
+    uploadProfileBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      profileImageInput.click();
+    });
+  }
+
+  // Add user functionality
+  if (addUserBtn) {
+    addUserBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const phone = userPhone.value.trim();
+      const domain = userDomain.value.trim();
+      
+      if (!phone || !domain) {
+        alert("Please fill in both phone number and domain.");
+        return;
+      }
+
+      // Generate a simple name from domain
+      const name = domain.split('.')[0] || "User";
+      
+      addUser(name, phone, domain, currentProfileImage || 'https://via.placeholder.com/100x100?text=No+Image');
+      clearUserForm();
+      currentProfileImage = null;
+    });
+  }
+
+  // Update user functionality
+  if (updateUserBtn) {
+    updateUserBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const phone = userPhone.value.trim();
+      const domain = userDomain.value.trim();
+      
+      if (!phone || !domain) {
+        alert("Please fill in both phone number and domain.");
+        return;
+      }
+
+      if (!editingUserId) {
+        alert("No user selected for editing.");
+        return;
+      }
+
+      const user = users.find(u => u.id === editingUserId);
+      if (user) {
+        updateUser(editingUserId, user.name, phone, domain, currentProfileImage || user.profileImage, user.promoCode);
+        clearUserForm();
+        currentProfileImage = null;
+      }
+    });
+  }
+
+  // Clear form functionality
+  if (clearUserBtn) {
+    clearUserBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      clearUserForm();
+      currentProfileImage = null;
+    });
+  }
+
+  // Initial render of users table
+  renderUsersTable();
 });
