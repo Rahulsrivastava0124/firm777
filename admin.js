@@ -604,6 +604,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const sdClearBtn = document.getElementById("sdClearBtn");
   const sdProfile = document.getElementById("sdProfile");
   const sdProfilePreview = document.getElementById("sdProfilePreview");
+  const sdThumbnail = document.getElementById("sdThumbnail");
+  const sdThumbnailPreview = document.getElementById("sdThumbnailPreview");
+  const sdProfileName = document.getElementById("sdProfileName");
+  const sdThumbnailName = document.getElementById("sdThumbnailName");
   const sdSubmitPhoneBtn = document.getElementById("sdSubmitPhoneBtn");
   const sdTableBody = document.getElementById("sdTableBody");
   const sdLookupName = document.getElementById("sdLookupName");
@@ -629,9 +633,11 @@ document.addEventListener("DOMContentLoaded", function () {
     sdUpdateBtn.style.display = "none";
     sdAddBtn.textContent = "Add New";
     sdUpdateBtn.removeAttribute("data-editing-id");
+    if (sdProfileName) sdProfileName.textContent = "No file chosen";
+    if (sdThumbnailName) sdThumbnailName.textContent = "No file chosen";
   }
 
-  function setEditMode(subdomainId, subdomainName, phoneNumber, profileImgUrl) {
+  function setEditMode(subdomainId, subdomainName, phoneNumber, profileImgUrl, thumbnailUrl) {
     sdAddBtn.style.display = "none";
     sdUpdateBtn.style.display = "inline-block";
     sdUpdateBtn.textContent = "Update";
@@ -641,9 +647,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (sdProfilePreview) {
       sdProfilePreview.src = profileImgUrl || "https://via.placeholder.com/64x64?text=IMG";
     }
+    if (sdThumbnailPreview) {
+      sdThumbnailPreview.src = thumbnailUrl || "https://via.placeholder.com/64x64?text=TH";
+    }
     if (sdProfile) {
       sdProfile.value = "";
     }
+    if (sdThumbnail) {
+      sdThumbnail.value = "";
+    }
+    if (sdProfileName) sdProfileName.textContent = "No file chosen";
+    if (sdThumbnailName) sdThumbnailName.textContent = "No file chosen";
   }
 
   // Subdomain API functions
@@ -670,12 +684,15 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function createSubdomain(subdomainName, phoneNumber, profileFile) {
+  function createSubdomain(subdomainName, phoneNumber, profileFile, thumbnailFile) {
     const formData = new FormData();
     formData.append("subdomain_name", subdomainName);
     formData.append("phone_number", phoneNumber);
     if (profileFile) {
       formData.append("profile_img", profileFile);
+    }
+    if (thumbnailFile) {
+      formData.append("profile_thumbnail", thumbnailFile);
     }
 
     const requestOptions = {
@@ -701,12 +718,15 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function updateSubdomain(subdomainId, subdomainName, phoneNumber, profileFile) {
+  function updateSubdomain(subdomainId, subdomainName, phoneNumber, profileFile, thumbnailFile) {
     const formData = new FormData();
     formData.append("subdomain_name", subdomainName);
     formData.append("phone_number", phoneNumber);
     if (profileFile) {
       formData.append("profile_img", profileFile);
+    }
+    if (thumbnailFile) {
+      formData.append("profile_thumbnail", thumbnailFile);
     }
 
     const requestOptions = {
@@ -804,15 +824,19 @@ document.addEventListener("DOMContentLoaded", function () {
       subdomains.forEach((subdomain) => {
         const tr = document.createElement("tr");
         const imgUrl = subdomain.profile_img || "https://via.placeholder.com/40x40?text=IMG";
+        const thumbUrl = subdomain.profile_thumbnail || "https://via.placeholder.com/40x40?text=TH";
         tr.innerHTML = `
-          <td class="px-3 py-2">
-            <img src="${imgUrl}" alt="Profile" class="w-10 h-10 rounded-full object-cover border" />
+          <td class=\"px-3 py-2\">
+            <img src=\"${imgUrl}\" alt=\"Profile\" class=\"w-10 h-10 rounded-full object-cover border\" />
           </td>
-          <td class="px-3 py-2">${subdomain.subdomain_name}</td>
-          <td class="px-3 py-2">${subdomain.phone_number}</td>
-          <td class="px-3 py-2">
-            <button data-edit-id="${subdomain._id || subdomain.id}" data-edit-name="${subdomain.subdomain_name}" data-edit-phone="${subdomain.phone_number}" data-edit-img="${imgUrl}" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-800">Edit</button>
-            <button data-delete-id="${subdomain._id || subdomain.id}" class="ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white">Delete</button>
+          <td class=\"px-3 py-2\">
+            <img src=\"${thumbUrl}\" alt=\"Thumbnail\" class=\"w-16 h-16 rounded object-cover border\" />
+          </td>
+          <td class=\"px-3 py-2\">${subdomain.subdomain_name}</td>
+          <td class=\"px-3 py-2\">${subdomain.phone_number}</td>
+          <td class=\"px-3 py-2\">
+            <button data-edit-id=\"${subdomain._id || subdomain.id}\" data-edit-name=\"${subdomain.subdomain_name}\" data-edit-phone=\"${subdomain.phone_number}\" data-edit-img=\"${imgUrl}\" data-edit-thumb=\"${thumbUrl}\" class=\"px-2 py-1 text-xs rounded bg-gray-200 text-gray-800\">Edit</button>
+            <button data-delete-id=\"${subdomain._id || subdomain.id}\" class=\"ml-2 px-2 py-1 text-xs rounded bg-red-500 text-white\">Delete</button>
           </td>
         `;
         sdTableBody.appendChild(tr);
@@ -826,6 +850,9 @@ document.addEventListener("DOMContentLoaded", function () {
         tr.innerHTML = `
           <td class="px-3 py-2">
             <img src="https://via.placeholder.com/40x40?text=IMG" alt="Profile" class="w-10 h-10 rounded-full object-cover border" />
+          </td>
+          <td class="px-3 py-2">
+            <img src="https://via.placeholder.com/64x64?text=TH" alt="Thumbnail" class="w-16 h-16 rounded object-cover border" />
           </td>
           <td class="px-3 py-2">${name}</td>
           <td class="px-3 py-2">${data[name]}</td>
@@ -843,22 +870,60 @@ document.addEventListener("DOMContentLoaded", function () {
   if (sdProfile) {
     sdProfile.addEventListener("change", function (e) {
       const file = e.target.files && e.target.files[0];
-      if (!file) return;
+      if (!file) {
+        if (sdProfileName) sdProfileName.textContent = "No file chosen";
+        return;
+      }
       const validTypes = ["image/png", "image/gif"];
       if (!validTypes.includes(file.type)) {
         alert("Please select a PNG or GIF image file.");
         sdProfile.value = "";
+        if (sdProfileName) sdProfileName.textContent = "No file chosen";
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size must be less than 5MB.");
+      if (file.size > 50 * 1024 * 1024) {
+        alert("File size must be less than 50MB.");
         sdProfile.value = "";
+        if (sdProfileName) sdProfileName.textContent = "No file chosen";
         return;
       }
+      if (sdProfileName) sdProfileName.textContent = file.name;
       if (sdProfilePreview) {
         const reader = new FileReader();
         reader.onload = function (ev) {
           sdProfilePreview.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Thumbnail change handler (PNG/GIF)
+  if (sdThumbnail) {
+    sdThumbnail.addEventListener("change", function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        if (sdThumbnailName) sdThumbnailName.textContent = "No file chosen";
+        return;
+      }
+      const validTypes = ["image/png", "image/gif"];
+      if (!validTypes.includes(file.type)) {
+        alert("Please select a PNG or GIF image file for thumbnail.");
+        sdThumbnail.value = "";
+        if (sdThumbnailName) sdThumbnailName.textContent = "No file chosen";
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        alert("Thumbnail size must be less than 50MB.");
+        sdThumbnail.value = "";
+        if (sdThumbnailName) sdThumbnailName.textContent = "No file chosen";
+        return;
+      }
+      if (sdThumbnailName) sdThumbnailName.textContent = file.name;
+      if (sdThumbnailPreview) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          sdThumbnailPreview.src = ev.target.result;
         };
         reader.readAsDataURL(file);
       }
@@ -871,6 +936,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const name = (sdName.value || "").trim();
       const phone = (sdPhone.value || "").trim();
       const profileFile = sdProfile && sdProfile.files && sdProfile.files[0] ? sdProfile.files[0] : null;
+      const thumbnailFile = sdThumbnail && sdThumbnail.files && sdThumbnail.files[0] ? sdThumbnail.files[0] : null;
       
       if (!name || !phone) {
         alert("Please enter both subdomain name and phone number");
@@ -882,7 +948,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sdAddBtn.textContent = "Creating...";
       sdAddBtn.disabled = true;
 
-      createSubdomain(name, phone, profileFile)
+      createSubdomain(name, phone, profileFile, thumbnailFile)
         .then((result) => {
           console.log("Subdomain created successfully:", result);
           alert(`Subdomain ${name} created successfully with phone ${phone}`);
@@ -896,6 +962,8 @@ document.addEventListener("DOMContentLoaded", function () {
           sdPhone.value = "";
           if (sdProfile) sdProfile.value = "";
           if (sdProfilePreview) sdProfilePreview.src = "https://via.placeholder.com/64x64?text=IMG";
+          if (sdThumbnail) sdThumbnail.value = "";
+          if (sdThumbnailPreview) sdThumbnailPreview.src = "https://via.placeholder.com/64x64?text=TH";
           setAddMode(); // Reset to add mode
         })
         .catch((error) => {
@@ -918,6 +986,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const phone = (sdPhone.value || "").trim();
       const editingId = sdUpdateBtn.getAttribute("data-editing-id");
       const profileFile = sdProfile && sdProfile.files && sdProfile.files[0] ? sdProfile.files[0] : null;
+      const thumbnailFile = sdThumbnail && sdThumbnail.files && sdThumbnail.files[0] ? sdThumbnail.files[0] : null;
       
       if (!name || !phone || !editingId) {
         alert("Please enter both subdomain name and phone number");
@@ -929,7 +998,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sdUpdateBtn.textContent = "Updating...";
       sdUpdateBtn.disabled = true;
 
-      updateSubdomain(editingId, name, phone, profileFile)
+      updateSubdomain(editingId, name, phone, profileFile, thumbnailFile)
         .then((result) => {
           console.log("Subdomain updated successfully:", result);
           alert(`Subdomain ${name} updated successfully with phone ${phone}`);
@@ -943,6 +1012,8 @@ document.addEventListener("DOMContentLoaded", function () {
           sdPhone.value = "";
           if (sdProfile) sdProfile.value = "";
           if (sdProfilePreview) sdProfilePreview.src = "https://via.placeholder.com/64x64?text=IMG";
+          if (sdThumbnail) sdThumbnail.value = "";
+          if (sdThumbnailPreview) sdThumbnailPreview.src = "https://via.placeholder.com/64x64?text=TH";
           setAddMode(); // Reset to add mode
         })
         .catch((error) => {
@@ -963,6 +1034,8 @@ document.addEventListener("DOMContentLoaded", function () {
       sdPhone.value = "";
       if (sdProfile) sdProfile.value = "";
       if (sdProfilePreview) sdProfilePreview.src = "https://via.placeholder.com/64x64?text=IMG";
+      if (sdThumbnail) sdThumbnail.value = "";
+      if (sdThumbnailPreview) sdThumbnailPreview.src = "https://via.placeholder.com/64x64?text=TH";
       setAddMode(); // Reset to add mode when clearing
     });
   }
@@ -1031,6 +1104,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const editName = target.getAttribute("data-edit-name");
         const editPhone = target.getAttribute("data-edit-phone");
         const editImg = target.getAttribute("data-edit-img");
+        const editThumb = target.getAttribute("data-edit-thumb");
 
         // Handle server data delete
         const deleteId = target.getAttribute("data-delete-id");
@@ -1041,11 +1115,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (editId && editName && editPhone) {
           // Edit server data
-          setEditMode(editId, editName, editPhone, editImg);
+          setEditMode(editId, editName, editPhone, editImg, editThumb);
         } else if (editKey) {
           // Edit localStorage data (fallback)
           const data = loadMappings();
-          setEditMode(editKey, editKey, data[editKey] || "", null);
+          setEditMode(editKey, editKey, data[editKey] || "", null, null);
         }
 
         if (deleteId) {

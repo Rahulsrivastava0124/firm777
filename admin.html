@@ -170,10 +170,26 @@
                 </div>
                 <!-- Profile image upload -->
                 <div>
-                  <label for="sdProfile" class="block text-sm text-gray-700 mb-1">Profile image (PNG/GIF, max 5MB)</label>
+                  <label for="sdProfile" class="block text-sm text-gray-700 mb-1">Profile image (PNG/GIF, max 50MB)</label>
                   <div class="flex items-center gap-3">
                     <img id="sdProfilePreview" src="https://via.placeholder.com/64x64?text=IMG" alt="Profile" class="w-16 h-16 rounded-full object-cover border" />
-                    <input type="file" id="sdProfile" accept=".png,.gif" class="text-sm" />
+                    <div class="flex items-center">
+                      <label for="sdProfile" class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">Choose file</label>
+                      <span id="sdProfileName" class="ml-2 text-sm text-gray-500">No file chosen</span>
+                      <input type="file" id="sdProfile" accept=".png,.gif" class="sr-only" />
+                    </div>
+                  </div>
+                </div>
+                <!-- Thumbnail image upload -->
+                <div>
+                  <label for="sdThumbnail" class="block text-sm text-gray-700 mb-1">Profile thumbnail (PNG/GIF, max 50MB)</label>
+                  <div class="flex items-center gap-3">
+                    <img id="sdThumbnailPreview" src="https://via.placeholder.com/96x96?text=TH" alt="Thumbnail" class="w-24 h-24 rounded object-cover border" />
+                    <div class="flex items-center">
+                      <label for="sdThumbnail" class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">Choose file</label>
+                      <span id="sdThumbnailName" class="ml-2 text-sm text-gray-500">No file chosen</span>
+                      <input type="file" id="sdThumbnail" accept=".png,.gif" class="sr-only" />
+                    </div>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -207,6 +223,7 @@
                       <thead class="bg-gray-50">
                         <tr>
                           <th class="px-3 py-2 text-left">Profile</th>
+                          <th class="px-3 py-2 text-left">Thumbnail</th>
                           <th class="px-3 py-2 text-left">Subdomain</th>
                           <th class="px-3 py-2 text-left">Phone</th>
                           <th class="px-3 py-2 text-left">Actions</th>
