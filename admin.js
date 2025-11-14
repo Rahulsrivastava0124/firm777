@@ -122,7 +122,7 @@ function fetchAllImages() {
     redirect: "follow",
   };
 
-  return fetch("https://api2.firm777.com/api/images", requestOptions)
+  return fetch("https://api.playbucks7official.com/api/images", requestOptions)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -221,7 +221,7 @@ function updateImage(imageId, file) {
     editButton.classList.add("bg-gray-400");
   }
 
-  fetch(`https://api2.firm777.com/api/images/${imageId}`, requestOptions)
+  fetch(`https://api.playbucks7official.com/api/images/${imageId}`, requestOptions)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -274,7 +274,7 @@ function handleDeleteImage(imageId) {
     // Show loading state (you could add a loading indicator here)
     console.log("Deleting image:", imageId);
 
-    fetch(`https://api2.firm777.com/api/images/${imageId}`, requestOptions)
+    fetch(`https://api.playbucks7official.com/api/images/${imageId}`, requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -324,7 +324,7 @@ function uploadImage(file, slideIndex) {
     uploadBtn.disabled = true;
   }
 
-  fetch("https://api2.firm777.com/api/upload-image", requestOptions)
+  fetch("https://api.playbucks7official.com/api/upload-image", requestOptions)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -667,7 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
       redirect: "follow",
     };
 
-    return fetch("https://api2.firm777.com/api/subdomains", requestOptions)
+    return fetch("https://api.playbucks7official.com/api/subdomains", requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -701,7 +701,7 @@ document.addEventListener("DOMContentLoaded", function () {
       redirect: "follow",
     };
 
-    return fetch("https://api2.firm777.com/api/subdomains", requestOptions)
+    return fetch("https://api.playbucks7official.com/api/subdomains", requestOptions)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -736,7 +736,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     return fetch(
-      `https://api2.firm777.com/api/subdomains/${subdomainId}`,
+      `https://api.playbucks7official.com/api/subdomains/${subdomainId}`,
       requestOptions
     )
       .then((response) => {
@@ -762,7 +762,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     return fetch(
-      `https://api2.firm777.com/api/subdomains/${subdomainId}`,
+      `https://api.playbucks7official.com/api/subdomains/${subdomainId}`,
       requestOptions
     )
       .then((response) => {
@@ -797,7 +797,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     return fetch(
-      `https://api2.firm777.com/api/subdomains/${subdomainId}`,
+      `https://api.playbucks7official.com/api/subdomains/${subdomainId}`,
       requestOptions
     )
       .then((response) => {
